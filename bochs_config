@@ -1,0 +1,5 @@
+
+floppya: 1_44="build/image/main_floppy.img", status=inserted
+boot: floppy
+magic_break: enabled=1
+display_library: sdl2
