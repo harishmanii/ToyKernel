@@ -40,7 +40,9 @@ void __attribute__((cdecl)) start(uint16_t bootDrive)
     }
     FAT_Close(fd);
 
-    printf("Hello--bin");
+
+    printf("The value is %p ",Kernel);
+    print_buffer("entry bytes:", Kernel, 8);
 
     // execute kernel
     KernelStart kernelStart = (KernelStart)Kernel;

@@ -1,3 +1,3 @@
-symbol-file build/debugging/stage2.elf
+symbol-file build/debugging/kernel.elf
 target remote localhost:1234
 set disassembly-flavor intel

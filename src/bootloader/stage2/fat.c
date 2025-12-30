@@ -193,6 +193,46 @@ uint32_t FAT_NextCluster(uint32_t currentCluster)
         return (*(uint16_t*)(g_Fat + fatIndex)) >> 4;
 }
 
+void FAT_ListDirectory(DISK* disk, FAT_File* dir)
+{
+    FAT_DirectoryEntry entry;
+
+    // reset directory position
+    dir->Position = 0;
+
+    while (FAT_ReadEntry(disk, dir, &entry))
+    {
+        // 0x00 = end of directory
+        if (entry.Name[0] == 0x00)
+            break;
+
+        // 0xE5 = deleted entry
+        if (entry.Name[0] == 0xE5)
+            continue;
+
+        // skip volume labels
+        if (entry.Attributes & FAT_ATTRIBUTE_VOLUME_ID)
+            continue;
+
+        // print 8.3 name
+        for (int i = 0; i < 8 && entry.Name[i] != ' '; i++)
+            printf("%c", entry.Name[i]);
+
+        if (!(entry.Attributes & FAT_ATTRIBUTE_DIRECTORY))
+        {
+            printf(".");
+            for (int i = 8; i < 11 && entry.Name[i] != ' '; i++)
+                printf("%c", entry.Name[i]);
+        }
+
+        if (entry.Attributes & FAT_ATTRIBUTE_DIRECTORY)
+            printf(" <DIR>");
+
+        printf("\n");
+    }
+}
+
+
 uint32_t FAT_Read(DISK* disk, FAT_File* file, uint32_t byteCount, void* dataOut)
 {
     // get file data
@@ -366,6 +406,10 @@ FAT_File* FAT_Open(DISK* disk, const char* path)
             return NULL;
         }
     }
+
+    FAT_ListDirectory(disk, &g_Data->RootDirectory.Public);
+
+    
 
     return current;
 }

@@ -45,9 +45,9 @@ $(BUILD_DIR)/bin/stage2.bin: always
 #
 # Kernel
 #
-kernel: $(BUILD_DIR)/kernel.bin
+kernel: $(BUILD_DIR)/bin/kernel.bin
 
-$(BUILD_DIR)/kernel.bin: always
+$(BUILD_DIR)/bin/kernel.bin: always
 	$(MAKE) -C src/kernel BUILD_DIR=$(abspath $(BUILD_DIR))
 
 #
@@ -67,9 +67,12 @@ clean:
 debug: all
 	qemu-system-i386 -fda $(IMAGE_DIR)/main_floppy.img -S -s
 
-debugb:
-	bochs -f bochs_config
+debugb: clean all
+	bochs -f debugging/bochs_config -dbg
+
+gdb:
+	gdb -x debugging/.gdbinit
 
 
-run: all
+run: clean all
 	qemu-system-i386 -fda $(IMAGE_DIR)/main_floppy.img

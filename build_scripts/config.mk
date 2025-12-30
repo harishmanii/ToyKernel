@@ -21,8 +21,11 @@ export TARGET_ASM = nasm
 export TARGET_ASM_FLAGS =
 export TARGET_LINKER_FLAGS = 
 export TARGET_LIBS = 
+export TARGET_OBJCOPY = $(TARGET)-objcopy
 
 export BUILD_DIR = $(abspath build)
+export IMAGE_DIR = $(BUILD_DIR)/image
+export BIN_DIR = $(BUILD_DIR)/bin
 
 
 BINUTIL_VERSION = 2.45.1
