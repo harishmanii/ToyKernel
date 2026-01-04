@@ -46,7 +46,8 @@
     mov ss, ax
 
 %endmacro
-
+; why we do this is, because the c gives as 32 bit memory addr
+; we can't set for 32bit addr in 16bit so using the segment offset addressing and it only works when memory addr is less then 1mb
 ; Convert linear address to segment:offset address
 ; Args:
 ;    1 - linear address
@@ -94,6 +95,8 @@ x86_Disk_GetDriveParams:
 
     [bits 16]
 
+    xchg bx, bx
+
     ; save regs
     push es
     push bx
@@ -113,6 +116,7 @@ x86_Disk_GetDriveParams:
     sbb eax, 0
 
     ; drive type from bl
+    ; 0x0000ff8b
     LinearToSegOffset [bp + 12], es, esi, si
     mov es:[si], bl
 
@@ -123,7 +127,7 @@ x86_Disk_GetDriveParams:
     inc bx
 
     LinearToSegOffset [bp + 16], es, esi, si
-    mov es:[si], bx
+    mov es:[si], bx    ; we can't set for 32bit addr in 16bit so using the segment offset addressing and it only works when memory addr is less then 1mb
 
     ; sectors
     xor ch, ch          ; sectors - lower 5 bits in cl

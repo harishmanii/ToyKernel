@@ -40,7 +40,7 @@ ebr_system_id:              db 'FAT12   '           ; 8 bytes
 start:
     
     ; setup data segments
-    mov ax, 0           ; can't set ds/es directly
+    mov ax, 0
     mov ds, ax
     mov es, ax
     
@@ -142,7 +142,7 @@ start:
 
     ; read kernel and process FAT chain
     mov bx, STAGE2_LOAD_SEGMENT
-    mov es, bx
+    mov es, bx      ; need our second stage 
     mov bx, STAGE2_LOAD_OFFSET
 
 .load_kernel_loop:
@@ -150,7 +150,7 @@ start:
     ; Read next cluster
     mov ax, [stage2_cluster]
     
-    ; not nice :( hardcoded value
+    ; not nice :( hardcoded value works only for 1.44mb 
     add ax, 31                          ; first cluster = (stage2_cluster - 2) * sectors_per_cluster + start_sector
                                         ; start sector = reserved + fats + root directory size = 1 + 18 + 134 = 33
     mov cl, 1

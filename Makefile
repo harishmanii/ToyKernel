@@ -70,9 +70,11 @@ debug: all
 debugb: clean all
 	bochs -f debugging/bochs_config -dbg
 
-gdb:
-	gdb -x debugging/.gdbinit
+gdbk:
+	gdb -x debugging/kernel
 
+gdb2:
+	gdb -x debugging/stage2
 
 run: clean all
 	qemu-system-i386 -fda $(IMAGE_DIR)/main_floppy.img

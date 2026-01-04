@@ -7,6 +7,8 @@ bool DISK_Initialize(DISK* disk, uint8_t driveNumber)
     uint8_t driveType;
     uint16_t cylinders, sectors, heads;
 
+    driveType = 99;
+
     if (!x86_Disk_GetDriveParams(disk->id, &driveType, &cylinders, &sectors, &heads))
         return false;
 
@@ -18,6 +20,7 @@ bool DISK_Initialize(DISK* disk, uint8_t driveNumber)
     return true;
 }
 
+//LBA to CHS calculation
 void DISK_LBA2CHS(DISK* disk, uint32_t lba, uint16_t* cylinderOut, uint16_t* sectorOut, uint16_t* headOut)
 {
     // sector = (LBA % sectors per track + 1)

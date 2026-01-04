@@ -18,8 +18,13 @@ all: stage2
 
 stage2: $(BUILD_DIR)/bin/stage2.bin
 
-$(BUILD_DIR)/bin/stage2.bin: $(OBJECTS_ASM) $(OBJECTS_C)
-	$(TARGET_LD) $(TARGET_LINKER_FLAGS) -Wl,-Map=$(BUILD_DIR)/debugging/stage2.map -o $@ $^ $(TARGET_LIBS)
+$(BUILD_DIR)/debugging/stage2.elf: $(OBJECTS_ASM) $(OBJECTS_C)
+	$(TARGET_LD) $(TARGET_LINKER_FLAGS) \
+	-Wl,-Map=$(BUILD_DIR)/debugging/stage2.map \
+	-o $@ $^ $(TARGET_LIBS)
+
+$(BUILD_DIR)/bin/stage2.bin: $(BUILD_DIR)/debugging/stage2.elf
+	$(TARGET_OBJCOPY) -O binary $(BUILD_DIR)/debugging/stage2.elf $@
 
 $(BUILD_DIR)/stage2/c/%.o: %.c always
 	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ $<
@@ -30,6 +35,8 @@ $(BUILD_DIR)/stage2/asm/%.o: %.asm always
 always:
 	mkdir -p $(BUILD_DIR)/stage2/c
 	mkdir -p $(BUILD_DIR)/stage2/asm
+	mkdir -p $(BUILD_DIR)/bin
+	mkdir -p $(BUILD_DIR)/debugging
 
 clean:
 	rm -f $(BUILD_DIR)/bin/stage2.bin
