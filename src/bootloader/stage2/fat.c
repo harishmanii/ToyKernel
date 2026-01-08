@@ -1,71 +1,5 @@
 #include "fat.h"
-#include "stdio.h"
-#include "memdefs.h"
-#include "string.h"
-#include "memory.h"
-#include "ctype.h"
-#include <stddef.h>
-#include "minmax.h"
 
-#define SECTOR_SIZE             512
-#define MAX_PATH_SIZE           256
-#define MAX_FILE_HANDLES        10
-#define ROOT_DIRECTORY_HANDLE   -1
-
-typedef struct 
-{
-    uint8_t BootJumpInstruction[3];
-    uint8_t OemIdentifier[8];
-    uint16_t BytesPerSector;
-    uint8_t SectorsPerCluster;
-    uint16_t ReservedSectors;
-    uint8_t FatCount;
-    uint16_t DirEntryCount;
-    uint16_t TotalSectors;
-    uint8_t MediaDescriptorType;
-    uint16_t SectorsPerFat;
-    uint16_t SectorsPerTrack;
-    uint16_t Heads;
-    uint32_t HiddenSectors;
-    uint32_t LargeSectorCount;
-
-    // extended boot record
-    uint8_t DriveNumber;
-    uint8_t _Reserved;
-    uint8_t Signature;
-    uint32_t VolumeId;          // serial number, value doesn't matter
-    uint8_t VolumeLabel[11];    // 11 bytes, padded with spaces
-    uint8_t SystemId[8];
-
-    // ... we don't care about code ...
-
-} __attribute__((packed)) FAT_BootSector;
-
-
-typedef struct
-{
-    uint8_t Buffer[SECTOR_SIZE];
-    FAT_File Public;
-    bool Opened;
-    uint32_t FirstCluster;
-    uint32_t CurrentCluster;
-    uint32_t CurrentSectorInCluster;
-
-} FAT_FileData;
-
-typedef struct
-{
-    union
-    {
-        FAT_BootSector BootSector;
-        uint8_t BootSectorBytes[SECTOR_SIZE];
-    } BS;
-
-    FAT_FileData RootDirectory;
-
-    FAT_FileData OpenedFiles[MAX_FILE_HANDLES];
-
-} FAT_Data;
 
 static FAT_Data* g_Data;
 static uint8_t* g_Fat = NULL;
@@ -74,11 +8,13 @@ static uint32_t g_DataSectionLba;
 
 bool FAT_ReadBootSector(DISK* disk)
 {
+    // only boot sector data we retrive in bytes and it will change itt to the struture automatically using our predefined struture
     return DISK_ReadSectors(disk, 0, 1, g_Data->BS.BootSectorBytes);
 }
 
 bool FAT_ReadFat(DISK* disk)
 {
+    // here we retrive all the data with g_Fat int pointer
     return DISK_ReadSectors(disk, g_Data->BS.BootSector.ReservedSectors, g_Data->BS.BootSector.SectorsPerFat, g_Fat);
 }
 
@@ -86,14 +22,14 @@ bool FAT_Initialize(DISK* disk)
 {
     g_Data = (FAT_Data*)MEMORY_FAT_ADDR;
 
-    // read boot sector
+    // read boot sector only so thats that 1 
     if (!FAT_ReadBootSector(disk))
     {
         printf("FAT: read boot sector failed\r\n");
         return false;
     }
 
-    // read FAT
+    // read FAT section
     g_Fat = (uint8_t*)g_Data + sizeof(FAT_Data);
     uint32_t fatSize = g_Data->BS.BootSector.BytesPerSector * g_Data->BS.BootSector.SectorsPerFat;
     if (sizeof(FAT_Data) + fatSize >= MEMORY_FAT_SIZE)
@@ -102,13 +38,14 @@ bool FAT_Initialize(DISK* disk)
         return false;
     }
 
+    // read fat data and stored in integer variable so we can easliy iterate it through
     if (!FAT_ReadFat(disk))
     {
         printf("FAT: read FAT failed\r\n");
         return false;
     }
 
-    // open root directory file
+  
     uint32_t rootDirLba = g_Data->BS.BootSector.ReservedSectors + g_Data->BS.BootSector.SectorsPerFat * g_Data->BS.BootSector.FatCount;
     uint32_t rootDirSize = sizeof(FAT_DirectoryEntry) * g_Data->BS.BootSector.DirEntryCount;
 
@@ -116,11 +53,13 @@ bool FAT_Initialize(DISK* disk)
     g_Data->RootDirectory.Public.IsDirectory = true;
     g_Data->RootDirectory.Public.Position = 0;
     g_Data->RootDirectory.Public.Size = sizeof(FAT_DirectoryEntry) * g_Data->BS.BootSector.DirEntryCount;
+
     g_Data->RootDirectory.Opened = true;
     g_Data->RootDirectory.FirstCluster = rootDirLba;
     g_Data->RootDirectory.CurrentCluster = rootDirLba;
     g_Data->RootDirectory.CurrentSectorInCluster = 0;
 
+    // read the root directories and stored as Buffer on FAT_DATA
     if (!DISK_ReadSectors(disk, rootDirLba, 1, g_Data->RootDirectory.Buffer))
     {
         printf("FAT: read root directory failed\r\n");
@@ -235,7 +174,6 @@ void FAT_ListDirectory(DISK* disk, FAT_File* dir)
 
 uint32_t FAT_Read(DISK* disk, FAT_File* file, uint32_t byteCount, void* dataOut)
 {
-    // get file data
     FAT_FileData* fd = (file->Handle == ROOT_DIRECTORY_HANDLE) 
         ? &g_Data->RootDirectory 
         : &g_Data->OpenedFiles[file->Handle];
@@ -248,6 +186,7 @@ uint32_t FAT_Read(DISK* disk, FAT_File* file, uint32_t byteCount, void* dataOut)
 
     while (byteCount > 0)
     {
+        //need to start from here
         uint32_t leftInBuffer = SECTOR_SIZE - (fd->Public.Position % SECTOR_SIZE);
         uint32_t take = min(byteCount, leftInBuffer);
 
@@ -332,7 +271,7 @@ bool FAT_FindFile(DISK* disk, FAT_File* file, const char* name, FAT_DirectoryEnt
     if (ext == NULL)
         ext = name + 11;
 
-    for (int i = 0; i < 8 && name[i] && name + i < ext; i++)
+    for (int i = 0; i < 8 && name[i] && name + i < ext; i++)    // name + i < ext comparing in addr  level
         fatName[i] = toupper(name[i]);
 
     if (ext != name + 11)

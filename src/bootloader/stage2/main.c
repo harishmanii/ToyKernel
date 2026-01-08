@@ -31,22 +31,22 @@ void __attribute__((cdecl)) start(uint16_t bootDrive)
     // load kernel
     FAT_File* fd = FAT_Open(&disk, "/kernel.bin");
 
-    uint32_t read;
+    uint32_t readSize;
     uint8_t* kernelBuffer = Kernel;
-    while ((read = FAT_Read(&disk, fd, MEMORY_LOAD_SIZE, KernelLoadBuffer)))
+    while ((readSize = FAT_Read(&disk, fd, MEMORY_LOAD_SIZE, KernelLoadBuffer)))
     {
-        memcpy(kernelBuffer, KernelLoadBuffer, read);
-        kernelBuffer += read;
+        memcpy(kernelBuffer, KernelLoadBuffer, readSize);
+        kernelBuffer += readSize;
     }
     FAT_Close(fd);
 
 
-    printf("The value is %p ",Kernel);
-    print_buffer("entry bytes:", Kernel, 8);
 
-    // execute kernel
+    // printf("The value is %p ",Kernel);
+    // print_buffer("entry bytes:", Kernel, 8);
+    // // execute kernel
     KernelStart kernelStart = (KernelStart)Kernel;
-    kernelStart();
+    kernelStart(bootDrive);
 
 end:
     for (;;);

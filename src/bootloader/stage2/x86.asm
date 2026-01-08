@@ -95,7 +95,7 @@ x86_Disk_GetDriveParams:
 
     [bits 16]
 
-    xchg bx, bx
+    ; xchg bx, bx   ; bochs debugger
 
     ; save regs
     push es
@@ -204,6 +204,8 @@ x86_Disk_Read:
     mov ebp, esp          ; initialize new call frame
 
     x86_EnterRealMode
+
+    ; xchg bx, bx
 
     ; save modified regs
     push ebx
