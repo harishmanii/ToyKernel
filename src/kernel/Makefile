@@ -3,7 +3,7 @@
 TARGET_ASM_FLAGS += -f elf
 TARGET_CFLAGS += -ffreestanding -nostdlib
 TARGET_LIBS += -lgcc
-TARGET_LINKER_FLAGS += -T linker.ld -nostdlib
+TARGET_LINKER_FLAGS += -T linkers/linker.ld -nostdlib
 
 
 

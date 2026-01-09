@@ -1,4 +1,4 @@
-ENTRY(start)
+ENTRY(kstart)
 OUTPUT_FORMAT("elf32-i386")
 phys = 0x00100000;
 
