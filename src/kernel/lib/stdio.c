@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdarg.h>
-#include "x86.h"
+#include "../include/x86.h"
 
 const unsigned int SCREEN_WIDTH = 80;
 const unsigned int SCREEN_HEIGHT = 25;

@@ -1,7 +1,7 @@
 
 #include <stdint.h>
-#include "stdio.h"
-#include "memory.h"
+#include "include/stdio.h"
+#include "include/string.h"
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
