@@ -1,11 +1,6 @@
 KERNEL_C=$(BUILD_DIR)/kernel/c
-KERNEL_LIB=$(KERNEL_C)/lib
 KERNEL_ASM=$(BUILD_DIR)/kernel/asm
-KERNEL_MAIN_LINKER=linkers/linker.ld
-
-KERNEL_ASM_ARCH=$(KERNEL_ASM)/arch
-KERNEL_ASM_I686=$(KERNEL_ASM)/arch/i686
-
+KERNEL_MAIN_LINKER=linkers/kernel.ld
 
 TARGET_ASM_FLAGS += -f elf
 TARGET_CFLAGS += -ffreestanding -nostdlib
@@ -25,21 +20,17 @@ all: kernel
 kernel: $(BUILD_DIR)/debugging/kernel.elf
 
 $(BUILD_DIR)/debugging/kernel.elf: $(OBJECTS_ASM) $(OBJECTS_C)
+	@mkdir -p $(dir $@)
 	$(TARGET_LD) $(TARGET_LINKER_FLAGS) -Wl,-Map=$(DEBUGGING_BUILD_DIR)/kernel.map -o $@ $^ $(TARGET_LIBS)
 	$(TARGET_OBJCOPY) -O binary $(DEBUGGING_BUILD_DIR)/kernel.elf $(BIN_BUILD_DIR)/kernel.bin
 
-$(KERNEL_C)/%.o: %.c always
+$(KERNEL_C)/%.o: %.c
+	@mkdir -p $(dir $@)
 	$(TARGET_CC) $(TARGET_CFLAGS) -c -o $@ $<
 
-$(KERNEL_ASM)/%.o: %.asm always
+$(KERNEL_ASM)/%.o: %.asm
+	@mkdir -p $(dir $@)
 	$(TARGET_ASM) $(TARGET_ASM_FLAGS) -o $@ $<
-
-always:
-	mkdir -p $(KERNEL_C)
-	mkdir -p $(KERNEL_LIB)
-	mkdir -p $(KERNEL_ASM)
-	mkdir -p $(KERNEL_ASM_ARCH)
-	mkdir -p $(KERNEL_ASM_I686)
 
 
 clean:

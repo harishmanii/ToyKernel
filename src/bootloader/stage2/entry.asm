@@ -61,6 +61,12 @@ entry:
 
 EnableA20:
     [bits 16]
+
+    ; in al, 0x92
+    ; or al, 2      ; set bit 1
+    ; out 0x92, al
+
+
     ; disable keyboard
     call A20WaitInput
     mov al, KbdControllerDisableKeyboard

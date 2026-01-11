@@ -23,6 +23,7 @@ all: floppy_image
 floppy_image: $(IMAGE_DIR)/main_floppy.img
 
 $(IMAGE_DIR)/main_floppy.img: bootloader kernel
+	@mkdir -p $(dir $@)
 	echo "Building image..."
 	dd if=/dev/zero of=$(IMAGE_DIR)/main_floppy.img bs=512 count=2880
 	mformat -f 1440 -L 12 -v "NBOS" -i $(IMAGE_DIR)/main_floppy.img
@@ -37,7 +38,8 @@ bootloader: stage1 stage2
 
 stage1: $(BIN_BUILD_DIR)/stage1.bin
 
-$(BIN_BUILD_DIR)/stage1.bin: always
+$(BIN_BUILD_DIR)/stage1.bin:
+	@mkdir -p $(dir $@)
 	$(MAKE) -C src/bootloader/stage1 BUILD_DIR=$(abspath $(BUILD_DIR))
 
 stage2: $(BIN_BUILD_DIR)/stage2.bin
@@ -50,16 +52,12 @@ $(BIN_BUILD_DIR)/stage2.bin: always
 #
 kernel: $(BIN_BUILD_DIR)/kernel.bin
 
-$(BIN_BUILD_DIR)/kernel.bin: always
+$(BIN_BUILD_DIR)/kernel.bin:
 	$(MAKE) -C src/kernel BUILD_DIR=$(abspath $(BUILD_DIR))
 
 #
 # Always
 #
-always:
-	mkdir -p $(IMAGE_DIR)
-	mkdir -p $(BIN_BUILD_DIR)
-	mkdir -p $(DEBUGGING_BUILD_DIR)
 
 #
 # Clean
