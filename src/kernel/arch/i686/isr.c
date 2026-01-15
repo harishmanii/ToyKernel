@@ -57,6 +57,7 @@ void i686_ISR_Initialize()
 
 void __attribute__((cdecl)) i686_ISR_Handler(Registers* regs)
 {
+    // here we can confifure the customized isr instead of the default kernelPanic 
     if (g_ISRHandlers[regs->interrupt] != NULL)
         g_ISRHandlers[regs->interrupt](regs);
 
