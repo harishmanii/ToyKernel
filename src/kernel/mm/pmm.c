@@ -1,8 +1,5 @@
 #include "pmm.h"
-#include "../include/stdio.h"
-#include "../include/string.h"
-#include <stdbool.h>
-#include "memory.h"
+
 
 
 static uint32_t TOTAL_MEMORY; // total memory in bytes
@@ -13,24 +10,30 @@ static uint32_t* BIT_MAP=0;  // Bit map start address
 static uint32_t BITMAP_SIZEB; // total bytes needed to cover the entire memory address
 static uint32_t BIT_MAP_END; // it represent the last pointer if the bitmap 
 
-static struct memory_map_entry* MEMORY_MAP; // memory regions
+static MemoryInfo* MEMORY_MAP; // memory regions
 static uint32_t KERNEL_START_ADDR;
 static uint32_t KERNEL_END_ADDR;
 
 
-void get_memory_info(struct memory_map_entry* memory_map, uint32_t memory_map_count)
+
+extern char __kernel__start;
+extern char __kernel__end;
+
+
+void get_memory_info(MemoryInfo* memory)
 {
-    for (int i = 0; i < memory_map_count; i++) {
-        if (memory_map[i].type == 1) {
-            TOTAL_MEMORY += ((uint64_t)memory_map[i].length_high << ARCH)
-                            | memory_map[i].length_low;
+     TOTAL_MEMORY = 0;
+    for (int i = 0; i < memory->RegionCount; i++) {
+        if (memory->Regions[i].Type == 1) {
+            TOTAL_MEMORY += ((uint64_t)memory->Regions[i].Length_High << ARCH)
+                            | memory->Regions[i].Length_Low;
         }
     }
 
     TOTAL_PAGES = TOTAL_MEMORY / PER_BLOCK_SIZE;
     BITMAP_SIZEB = (TOTAL_PAGES + 7) / BYTE;
     TOTAL_BLOCK = (TOTAL_PAGES + 31) / ARCH;
-    MEMORY_MAP = memory_map;
+    MEMORY_MAP = memory;
 }
 
 void set_kernel_addr(char *__kernel__start,char *__kernel__end)
@@ -54,13 +57,11 @@ int test_bit(int bit)
     return (BIT_MAP[bit/ARCH] & (1 << (bit % ARCH)))==false?false:true;
 }
 
-void setup_memory_bitmap(char *_kernel_end)
+void setup_memory_bitmap()
 {
-   
-    uint32_t bit_map_start  = ((uint32_t)_kernel_end + 0xFFF) & ~0xFFF; 
+    uint32_t bit_map_start  = ((uint32_t)__kernel__end + 0xFFF) & ~0xFFF; 
     BIT_MAP = (uint32_t*)bit_map_start;
     BIT_MAP_END = bit_map_start + BITMAP_SIZEB;
-
     memset((void*)bit_map_start, 0, BITMAP_SIZEB); // zeroing all the bit_map position for the initial time
 }
 
@@ -132,12 +133,12 @@ int deallocate_memory(uint32_t base,uint32_t size)
 }
 
 
-void init_memory(struct memory_map_entry* memory_map, uint32_t memory_map_count,char *__kernel__start,char *_kernel_end)
+void INIT_MEMORY(BootParams* bootParams)
 {
-    set_kernel_addr(__kernel__start,_kernel_end);
-    get_memory_info(memory_map,memory_map_count);
-    setup_memory_bitmap(_kernel_end);
-    reserve_memory();
+    set_kernel_addr(&__kernel__start,&__kernel__end);
+    get_memory_info(&bootParams->Memory);
+    setup_memory_bitmap();
+    //reserve_memory();
 }
 
 

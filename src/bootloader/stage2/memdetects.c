@@ -18,14 +18,16 @@ void Memory_Detect(MemoryInfo* memoryInfo)
 
     while (ret > 0 && continuation != 0)
     {
-        g_MemRegions[g_MemRegionCount].Begin = block.Base;
-        g_MemRegions[g_MemRegionCount].Length = block.Length;
+        g_MemRegions[g_MemRegionCount].Begin_Low = block.Base_Low;
+        g_MemRegions[g_MemRegionCount].Begin_High = block.Base_High;
+
+        g_MemRegions[g_MemRegionCount].Length_Low = block.Length_Low;
+        g_MemRegions[g_MemRegionCount].Length_High = block.Length_High;
+
         g_MemRegions[g_MemRegionCount].Type = block.Type;
         g_MemRegions[g_MemRegionCount].ACPI = block.ACPI;
         ++g_MemRegionCount;
-
-        printf("E820: base=0x%llx length=0x%llx type=0x%x\n", block.Base, block.Length, block.Type);
-
+        // printf("E820: base=0x%llx length=0x%llx type=0x%x\n", block.Base, block.Length, block.Type);
         ret = x86_E820GetNextBlock(&block, &continuation);
     }
 

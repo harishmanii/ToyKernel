@@ -1,15 +1,12 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
+#include "../boot/bootparams.h"
+#include "../include/stdio.h"
+#include "../include/string.h"
+#include "memory.h"
 
-struct memory_map_entry {
-    uint32_t base_addr_low;
-    uint32_t base_addr_high;
-    uint32_t length_low;
-    uint32_t length_high;
-    uint32_t type;
-    uint32_t acpi_attributes;
-};
 
 // Memory region types
 #define MEMORY_USABLE 1
@@ -19,9 +16,9 @@ struct memory_map_entry {
 #define MEMORY_BAD 5
 
 
-void init_memory(struct memory_map_entry* memory_map, uint32_t memory_map_count,char *__kernel__start,char *_kernel_end);
+void INIT_MEMORY(BootParams* bootParams);
 
 //helper functions
-void setup_memory_bitmap(char *_kernel_end);
+void setup_memory_bitmap();
 void reserve_memory_block(uint32_t base,uint32_t size);
 void reserve_memory();

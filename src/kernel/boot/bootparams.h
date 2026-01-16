@@ -3,7 +3,12 @@
 #include <stdint.h>
 
 typedef struct {
-    uint64_t Begin, Length;
+    uint32_t Begin_Low;
+    uint32_t Begin_High;
+
+    uint32_t Length_Low;
+    uint32_t Length_High;
+    
     uint32_t Type;
     uint32_t ACPI;
 } MemoryRegion;
