@@ -1,5 +1,6 @@
 #include "../include/string.h"
 
+
 void* memcpy(void* dst, const void* src, uint16_t num)
 {
     uint8_t* u8Dst = (uint8_t *)dst;
@@ -11,12 +12,12 @@ void* memcpy(void* dst, const void* src, uint16_t num)
     return dst;
 }
 
-void * memset(void * ptr, int value, uint16_t num)
+void * memset(void * ptr, int value, size_t size)
 {
-    uint8_t* u8Ptr = (uint8_t *)ptr;
+    unsigned char *p = (unsigned char *)ptr;
 
-    for (uint16_t i = 0; i < num; i++)
-        u8Ptr[i] = (uint8_t)value;
+    for (uint32_t i = 0; i < size; i++)
+        p[i] = (unsigned char)value;
 
     return ptr;
 }

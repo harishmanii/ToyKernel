@@ -15,6 +15,8 @@
 #define MEMORY_ACPI_NVS 4
 #define MEMORY_BAD 5
 
+#define INVALID_FRAME (-1)
+
 
 void INIT_MEMORY(BootParams* bootParams);
 
