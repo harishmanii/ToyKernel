@@ -13,3 +13,9 @@ void HAL_Initialize(BootParams *bootParams) {
   i686_ISR_Initialize(); // init the entry with interrupts
   Initialize_memories(bootParams);
 }
+
+void no_exit(){
+  for(;;){
+    __asm__ volatile ("hlt");
+  }
+}

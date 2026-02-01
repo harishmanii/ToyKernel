@@ -1,2 +1,1 @@
-#define PER_BLOCK_SIZE 4096 
-#define BYTE 8
+#define KERNEL_ADDRESS 0x100000 // 1MB

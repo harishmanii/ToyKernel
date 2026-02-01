@@ -7,6 +7,7 @@ static uint32_t TOTAL_PAGES; // total no of 4kb pages
 static uint32_t TOTAL_BLOCK; // is the number of uint32_t entries in your bitmap.
 static uint32_t TOTAL_USED_BLOCKS = 0;
 
+
 static uint32_t* BIT_MAP=0;  // Bit map start address
 static uint32_t BITMAP_SIZEB; // total bytes needed to cover the entire memory address
 static uint32_t BIT_MAP_END; // it represent the last pointer if the bitmap 
@@ -132,7 +133,6 @@ uintptr_t allocate_chunk()
     set_bit(frame);
     uintptr_t addr = frame * PER_BLOCK_SIZE;
     TOTAL_USED_BLOCKS++;
-    // memset((void*)addr,0, PER_BLOCK_SIZE); for 
     return addr;
 }
 
@@ -173,7 +173,8 @@ uint32_t get_free_frame_by_size(size_t size)
 }
 
 
-uintptr_t allocate_byte(size_t size){
+uintptr_t allocate_byte(size_t size)
+{
   uint32_t frames = (size + PER_BLOCK_SIZE - 1) / PER_BLOCK_SIZE; // convert the size to exact no of fram so we can assign a byte
   uint32_t frame = get_free_frame_by_size(frames);
   
@@ -188,7 +189,8 @@ uintptr_t allocate_byte(size_t size){
   return addr;
 }
 
-uintptr_t allocate_page(size_t size){
+uintptr_t allocate_page(size_t size)
+{
   uint32_t frame = get_free_frame_by_size(size);
   
   if(frame == INVALID_FRAME)return 0;
@@ -236,7 +238,6 @@ void INIT_MEMORY(BootParams* bootParams)
 /*
 TODO:
 No free-count tracking
-No used-count tracking
 No double-free detection
 No usable-region filtering - Right now you reserve manually. Acceptable for v0.
 32-bit assumptions - You’re clearly in early x86 - fine.

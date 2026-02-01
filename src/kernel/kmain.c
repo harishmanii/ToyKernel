@@ -7,4 +7,7 @@
 void __attribute__((section(".entry"))) kstart(BootParams *bootParams) {
   HAL_Initialize(bootParams);
   printf("Hello world from kernel!!!\n");
+
+  
+  no_exit();
 }

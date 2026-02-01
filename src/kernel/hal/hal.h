@@ -8,3 +8,4 @@
 #include "memory.h"
 
 void HAL_Initialize(BootParams *bootParams);
+void no_exit();

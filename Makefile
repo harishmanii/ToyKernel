@@ -65,7 +65,7 @@ $(BIN_BUILD_DIR)/kernel.bin:
 clean:
 	rm -rf $(BUILD_DIR)/*
 
-debug: all
+debug: clean all
 	qemu-system-i386 -fda $(IMAGE_DIR)/main_floppy.img -S -s
 
 debugb: clean all
@@ -76,6 +76,8 @@ gdbk:
 
 gdb2:
 	gdb -x debugging/stage2
+
+build: clean all 
 
 run: clean all
 	qemu-system-i386 -fda $(IMAGE_DIR)/main_floppy.img
