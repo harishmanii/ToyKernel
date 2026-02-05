@@ -106,7 +106,7 @@ bool INITIALIZE_VMEMORY(void)
     // after enabled the paging we are still in the identity mapping , need to move to higher half 
     enable_paging();
 
-    return true;
+    return true
 }
 
 
