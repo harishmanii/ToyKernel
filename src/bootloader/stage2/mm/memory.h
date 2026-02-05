@@ -1,0 +1,1 @@
+#define KERNEL_ADDRESS 0x100000 // 1MB

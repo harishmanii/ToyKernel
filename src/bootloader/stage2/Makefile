@@ -7,10 +7,12 @@ TARGET_LINKER_FLAGS += -T linker.ld -nostdlib
 
 
 
-SOURCES_C=$(wildcard *.c)
-SOURCES_ASM=$(wildcard *.asm)
+
+SOURCES_C=$(shell find . -type f -name "*.c")
+SOURCES_ASM=$(shell find . -type f -name "*.asm")
 OBJECTS_C=$(patsubst %.c, $(BUILD_DIR)/stage2/c/%.o, $(SOURCES_C))
 OBJECTS_ASM=$(patsubst %.asm, $(BUILD_DIR)/stage2/asm/%.o, $(SOURCES_ASM))
+
 
 .PHONY: all stage2 clean always
 

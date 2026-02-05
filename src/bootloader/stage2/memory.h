@@ -1,6 +1,8 @@
 #pragma once
-#include "stdint.h"
 
-void* memcpy(void* dst, const void* src, uint16_t num);
-void* memset(void* ptr, int value, uint16_t num);
-int memcmp(const void* ptr1, const void* ptr2, uint16_t num);
+
+#include "bootparams.h"
+#include "mm/pmm/pmm.h"
+#include "mm/vmm/vmm.h"
+
+void Initialize_memories(BootParams *bootParams);
