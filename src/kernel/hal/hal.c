@@ -3,9 +3,8 @@
 extern uint8_t __bss_start;
 extern uint8_t __end;
 
-void HAL_Initialize(BootParams *bootParams) {
-
-  // bss initialization
+void HAL_Initialize(BootParams *bootParams) 
+{
   memset(&__bss_start, 0, (&__end) - (&__bss_start));
   clrscr();
   i686_GDT_Initialize(); // initialize and add the entry in GDT
@@ -14,7 +13,8 @@ void HAL_Initialize(BootParams *bootParams) {
   Initialize_memories(bootParams);
 }
 
-void no_exit(){
+void no_exit()
+{
   for(;;){
     __asm__ volatile ("hlt");
   }

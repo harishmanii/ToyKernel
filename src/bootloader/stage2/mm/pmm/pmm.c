@@ -189,7 +189,7 @@ uintptr_t allocate_byte(size_t size)
   return addr;
 }
 
-uintptr_t allocate_page(size_t size)
+uintptr_t allocate_block(size_t size)
 {
   uint32_t frame = get_free_frame_by_size(size);
   
