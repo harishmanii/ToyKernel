@@ -55,8 +55,8 @@ void __attribute__((cdecl)) start(uint16_t bootDrive)
     FAT_Close(fd);
 
     i686_GDT_Initialize(); // initialize and add the entry in GDT
-    i686_IDT_Initialize(); // init the IDT table
-    i686_ISR_Initialize(); // init the entry with interrupts
+    // i686_IDT_Initialize(); // init the IDT table
+    // i686_ISR_Initialize(); // init the entry with interrupts
     Initialize_memories(&g_BootParams);
 
     for (uint32_t virt = KERNEL_ADDRESS; virt < 0x400000; virt += PAGE_SIZE)

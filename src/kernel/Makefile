@@ -3,7 +3,7 @@ KERNEL_ASM=$(BUILD_DIR)/kernel/asm
 KERNEL_MAIN_LINKER=linkers/kernel.ld
 
 TARGET_ASM_FLAGS += -f elf
-TARGET_CFLAGS += -ffreestanding -nostdlib
+TARGET_CFLAGS += -ffreestanding -nostdlib -mgeneral-regs-only
 TARGET_LIBS += -lgcc
 TARGET_LINKER_FLAGS += -T $(KERNEL_MAIN_LINKER) -nostdlib
 
