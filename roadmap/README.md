@@ -32,18 +32,18 @@ Goals for this stage:
 #### 🟦 Early Kernel Setup
 - [x] Kernel linker script
 - [x] Basic C environment setup
-- [ ] VGA text mode driver
-- [ ] Global constructors support
+- [x] VGA text mode driver
+- [x] Global constructors support
 
 #### 🟩 Memory Management
-- [ ] Paging (setup and enable)
-- [ ] Physical memory manager
+- [x] Paging (setup and enable)
+- [x] Physical memory manager
 - [ ] Virtual memory manager
 
 #### 🟨 Hardware & Devices
-- [ ] Interrupt Descriptor Table (IDT)
-- [ ] PIC (8259) remapping
-- [ ] Exception & IRQ handlers
+- [x] Interrupt Descriptor Table (IDT)
+- [x] PIC (8259) remapping
+- [x] Exception & IRQ handlers
 - [ ] Keyboard driver
 - [ ] PIT (Programmable Interval Timer)
 
