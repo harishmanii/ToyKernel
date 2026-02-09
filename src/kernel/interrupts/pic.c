@@ -3,8 +3,10 @@
 // Send end of interrupt command to signal IRQ has been handled
 void send_pic_eoi(uint8_t irq)
 {
+    // slave port
     if (irq >= 8) outb(PIC_2_CMD, PIC_EOI);
 
+    // master port
     outb(PIC_1_CMD, PIC_EOI);
 }
 
@@ -26,13 +28,11 @@ void set_irq_mask(uint8_t irq)
     else {
         irq -= 8;
         port = PIC_2_DATA;
-    }
-
-    // Get current IMR value, set on the IRQ bit to mask it, then write new value
+    }    
     //   to IMR
     // NOTE: Masking IRQ2 will stop 2nd PIC from raising IRQs due to 2nd PIC being
     //   mapped to IRQ2 in PIC1
-    value = inb(port) | (1 << irq);
+    value = inb(port) | (1 << irq); // Get current IMR value, set on the IRQ bit to mask it, then write new value
     outb(port, value);
 }
 
@@ -67,6 +67,7 @@ void remap_pic(void)
     pic_2_mask = inb(PIC_2_DATA);
 
     // ICW 1 (Initialization control word) - bit 0 = send up to ICW 4, bit 4 = initialize PIC
+    // reset , clear ISR/IRR and ready to use cascade mode , Prepare to receive ICW2, ICW3, ICW4 in that exact order
     outb(PIC_1_CMD, 0x11);
     io_wait();
     outb(PIC_2_CMD, 0x11);

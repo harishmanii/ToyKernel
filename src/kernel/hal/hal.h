@@ -5,6 +5,8 @@
 #include "../boot/bootparams.h"
 #include "../include/stdio.h"
 #include "../include/string.h"
+#include "../interrupts/idt.h"
+#include "../interrupts/pic.h"
 
 
 #include "memory.h"
