@@ -45,7 +45,8 @@ Goals for this stage:
 - [x] PIC (8259) remapping
 - [x] Exception & IRQ handlers
 - [ ] Keyboard driver
-- [ ] PIT (Programmable Interval Timer)
+- [x] PIT (Programmable Interval Timer)
+- [ ] CMOS RTC
 
 #### 🟥 Future Modules (Optional)
 - [ ] Simple filesystem
@@ -70,7 +71,7 @@ Goals for this stage:
 - [x] Research: Read OSDev.org wiki pages for "PIC" (Programmable Interrupt Controller) and "PS/2 Keyboard".
 - [x] Remap the PIC: Write the code to remap the PIC (IRQ 0-7 -> 32-39, IRQ 8-15 -> 40-47). This is critical to avoid conflicts with CPU exceptions.
 - [ ] Write Keyboard ISR: Add an ISR for IRQ 1 (interrupt 33 after remapping).
-- [ ] Handle EOI: In the ISR, send the "End of Interrupt" (EOI) signal to the PIC.
+- [x] Handle EOI: In the ISR, send the "End of Interrupt" (EOI) signal to the PIC.
 - [ ] Read Scancode: In the ISR, read the scancode from the keyboard data port (0x60).
 - [ ] Create Scancode Map: Create a simple array to translate scancodes to ASCII characters (e.g., US QWERTY).
 - [ ] Test: Create a basic "echo" function. On each keypress, translate the scancode and print the character to the screen.
@@ -86,11 +87,11 @@ Goals for this stage:
 - [x] Test: Verify your kernel "Hello World" message still prints after paging is enabled.
 
 ### ✅ 5. Implement System Timer (PIT)
-- [ ] Research: Read OSDev.org on the "Programmable Interval Timer" (PIT).
-- [ ] Write Timer ISR: Add an ISR for IRQ 0 (interrupt 32 after remapping).
-- [ ] Set Timer Frequency: Write code to set the PIT frequency (e.g., 100 Hz).
-- [ ] Create Tick Counter: In the ISR, increment a global kernel_ticks variable and send an EOI to the PIC.
-- [ ] Test: Write a simple function to print the kernel_ticks to the screen and watch the counter go up. This is the "heartbeat" of your OS.
+- [x] Research: Read OSDev.org on the "Programmable Interval Timer" (PIT).
+- [x] Write Timer ISR: Add an ISR for IRQ 0 (interrupt 32 after remapping).
+- [x] Set Timer Frequency: Write code to set the PIT frequency (e.g., 100 Hz).
+- [x] Create Tick Counter: In the ISR, increment a global kernel_ticks variable and send an EOI to the PIC.
+- [x] Test: Write a simple function to print the kernel_ticks to the screen and watch the counter go up. This is the "heartbeat" of your OS.
 
 ### ✅ 6. Enter User-Mode & Implement System Calls
 - [ ] Research: Read OSDev.org on "Getting to User Mode", "TSS", and "System Calls".
