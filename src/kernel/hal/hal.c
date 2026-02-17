@@ -11,8 +11,9 @@ void HAL_Initialize(BootParams *bootParams)
   clrscr();
   i686_GDT_Initialize(); // initialize and add the entry in GDT
   // Initialize_memories(bootParams); // need to consider
-  init_idt_32();
   remap_pic();
+  init_idt_32();
+  
 }
 
 void no_exit()

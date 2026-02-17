@@ -13,10 +13,24 @@ void syscall_test1(void)
     printf("SYSCALL testing 1");
 }
 
+// Sleep for a given number of milliseconds
+// INPUTS:
+//  EBX = # of milliseconds
+void syscall_sleep(void)
+{
+    //__asm__ __volatile__ ("movl %%ebx, %0" : "=r"(*sleep_timer_ticks) );
+    __asm__ __volatile__ ("mov %%ebx, %0" : "=r"(*sleep_timer_ticks) );
+
+    // Wait ("Sleep") until # of ticks is 0
+    while (*sleep_timer_ticks > 0) __asm__ __volatile__ ("sti;hlt;cli");
+}
+
+
 
 void *syscalls[MAX_SYSCALLS] = {
     syscall_test0,
-    syscall_test1
+    syscall_test1,
+    syscall_sleep
 };
 
 __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
@@ -31,7 +45,7 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
     
     __asm__ __volatile__ (".intel_syntax noprefix\n"
 
-                          ".equ MAX_SYSCALLS, 5\n"  // Have to define again, inline asm does not see the #define
+                          ".equ MAX_SYSCALLS, 3\n"  // Have to define again, inline asm does not see the #define
 
                           "cmp eax, MAX_SYSCALLS-1\n"   // syscalls table is 0-based
                           "ja invalid_syscall\n"        // invalid syscall number, skip and return
@@ -64,7 +78,6 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
                           "iretd\n"         // Need interrupt return here! iret, NOT ret
 
                           "invalid_syscall:\n"
-                          "mov eax, -1\n"   // Error will be -1
                           "iretd\n"
 
                           ".att_syntax");
