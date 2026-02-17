@@ -67,8 +67,8 @@ Goals for this stage:
 - [x] Enable Interrupts: Add the sti instruction after the IDT is loaded to enable hardware interrupts.
 
 ### ✅ 3. Implement Keyboard Input (IRQs & PIC)
-- [ ] Research: Read OSDev.org wiki pages for "PIC" (Programmable Interrupt Controller) and "PS/2 Keyboard".
-- [ ] Remap the PIC: Write the code to remap the PIC (IRQ 0-7 -> 32-39, IRQ 8-15 -> 40-47). This is critical to avoid conflicts with CPU exceptions.
+- [x] Research: Read OSDev.org wiki pages for "PIC" (Programmable Interrupt Controller) and "PS/2 Keyboard".
+- [x] Remap the PIC: Write the code to remap the PIC (IRQ 0-7 -> 32-39, IRQ 8-15 -> 40-47). This is critical to avoid conflicts with CPU exceptions.
 - [ ] Write Keyboard ISR: Add an ISR for IRQ 1 (interrupt 33 after remapping).
 - [ ] Handle EOI: In the ISR, send the "End of Interrupt" (EOI) signal to the PIC.
 - [ ] Read Scancode: In the ISR, read the scancode from the keyboard data port (0x60).
@@ -76,14 +76,14 @@ Goals for this stage:
 - [ ] Test: Create a basic "echo" function. On each keypress, translate the scancode and print the character to the screen.
 
 ### ✅ 4. Implement Paging (Virtual Memory)
-- [ ] Research: Read OSDev.org wiki page for "Paging" and "Physical Memory Management".
-- [ ] Get Memory Map: (In boot.asm) Use int 0x15, eax = 0xE820 to get a memory map from the BIOS. Save this map somewhere safe (e.g., at 0x1000).
-- [ ] Pass Memory Map: Pass the location of the memory map to your C kernel.
-- [ ] Create PMM: Write a simple Physical Memory Manager (PMM), often called a "bitmap allocator," to keep track of free/used 4KB physical pages.
-- [ ] Create Page Structures: Define C structures for a Page Directory and Page Tables.
-- [ ] Map Kernel: Write functions to map virtual addresses to physical addresses. Map your kernel (at 0x8000) and the VGA buffer (0xB8000).
-- [ ] Enable Paging: Write the assembly code to load the Page Directory address into the CR3 register and set the paging bit in CR0.
-- [ ] Test: Verify your kernel "Hello World" message still prints after paging is enabled.
+- [x] Research: Read OSDev.org wiki page for "Paging" and "Physical Memory Management".
+- [x] Get Memory Map: (In boot.asm) Use int 0x15, eax = 0xE820 to get a memory map from the BIOS. Save this map somewhere safe (e.g., at 0x1000).
+- [x] Pass Memory Map: Pass the location of the memory map to your C kernel.
+- [x] Create PMM: Write a simple Physical Memory Manager (PMM), often called a "bitmap allocator," to keep track of free/used 4KB physical pages.
+- [x] Create Page Structures: Define C structures for a Page Directory and Page Tables.
+- [x] Map Kernel: Write functions to map virtual addresses to physical addresses. Map your kernel (at 0x8000) and the VGA buffer (0xB8000).
+- [x] Enable Paging: Write the assembly code to load the Page Directory address into the CR3 register and set the paging bit in CR0.
+- [x] Test: Verify your kernel "Hello World" message still prints after paging is enabled.
 
 ### ✅ 5. Implement System Timer (PIT)
 - [ ] Research: Read OSDev.org on the "Programmable Interval Timer" (PIT).
