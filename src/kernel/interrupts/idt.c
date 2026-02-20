@@ -68,8 +68,10 @@ void init_idt_32(void)
     set_idt_descriptor_32(0x80,syscall_dispatcher,INT_GATE_FLAGS);
 
     set_idt_descriptor_32(0x20, timer_irq0_handler, INT_GATE_FLAGS); 
+    set_idt_descriptor_32(0x21, keyboard_irq1_handler, INT_GATE_FLAGS);
 
     clear_irq_mask(0); // Enable timer (will tick every ~18.2/s)
+    clear_irq_mask(1); // keyboard interrupt
     clear_irq_mask(2); // Enable PIC2 line
 
      __asm__ __volatile__("sti");
@@ -79,4 +81,5 @@ void init_idt_32(void)
      uint16_t channel = 0;
 
      set_pit_channel_mode_frequency(channel, rate_generator_mode, divisor);
+      
 }

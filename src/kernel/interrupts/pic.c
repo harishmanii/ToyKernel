@@ -1,5 +1,9 @@
 #include "pic.h"
 
+/*
+    Refefernces are taken from OSwiki and brokenthorn
+*/
+
 
 uint32_t *sleep_timer_ticks = (uint32_t *)IRQ0_SLEEP_TIMER_TICKS_AREA;
 
@@ -153,4 +157,76 @@ void set_pit_channel_mode_frequency(const uint8_t channel, const uint8_t operati
     outb(0x40 + channel, (uint8_t)(divisor >> 8));    // High byte
 
     __asm__ __volatile__ ("sti");
+}
+
+
+// Keyboard IRQ1 handler , implmeneted as per PS2 keyyboard documentation and get the refernce from oswikki
+// need to enchance when we needed this
+__attribute__ ((interrupt)) void keyboard_irq1_handler(int_frame_32_t *frame)
+{
+    //Make Key press
+    //Break Key release
+    enum {
+        LSHIFT_MAKE  = 0x2A,
+        LSHIFT_BREAK = 0xAA,
+        RSHIFT_MAKE  = 0x36,
+        RSHIFT_BREAK = 0xB6,
+        LCTRL_MAKE   = 0x1D,
+        LCTRL_BREAK  = 0x9D,
+    };
+
+    uint8_t key;
+
+    // TODO: Add keyboard initialization & scancode functions, 
+    //   do not assume scancode set 1
+    
+    // Scancode set 1 -> Ascii lookup table
+    const uint8_t *scancode_to_ascii = "\x00\x1B" "1234567890-=" "\x08"
+    "\x00" "qwertyuiop[]" "\x0D\x1D" "asdfghjkl;'`" "\x00" "\\"
+    "zxcvbnm,./" "\x00\x00\x00" " ";
+
+    // Shift key pressed on number row lookup table (0-9 keys)
+    const uint8_t *num_row_shifts = ")!@#$%^&*(";
+
+    // Set current key to null
+    key_info->key = 0;
+
+    key = inb(PS2_DATA_PORT);   // Read in new key
+
+    if (key) {
+        if      (key == LSHIFT_MAKE  || key == RSHIFT_MAKE) key_info->shift = true; 
+        else if (key == LSHIFT_BREAK || key == RSHIFT_BREAK) key_info->shift = false; 
+        else if (key == LCTRL_MAKE)  key_info->ctrl = true;
+        else if (key == LCTRL_BREAK) key_info->ctrl = false;
+
+        else {
+            if (!(key & 0x80)) {
+                // Only handle key presses.
+                // Don't translate escaped scancodes, only return them
+                key = scancode_to_ascii[key]; 
+
+                    // If pressed shift, translate key to shifted key
+                    if (key_info->shift) {
+                        if      (key >= 'a' && key <= 'z') key -= 0x20;  // Convert lowercase into uppercase
+                        else if (key >= '0' && key <= '9') key = num_row_shifts[key-0x30];  // Get int value of character, offset into shifted nums
+                        else {
+                            if      (key == '=')  key = '+';
+                            else if (key == '\\') key = '|'; 
+                            else if (key == '`')  key = '~';
+                            else if (key == '[')  key = '{';
+                            else if (key == ']')  key = '}';
+                            else if (key == '\'') key = '\"';
+                            else if (key == ';')  key = ':';
+                            else if (key == ',')  key = '<';
+                            else if (key == '.')  key = '>';
+                            else if (key == '/')  key = '?';
+                            // TODO: Add more shifted keys here...
+                        }
+                    }
+                
+                key_info->key = key;    // Set ascii key value in struct
+            }
+        }
+    }
+    send_pic_eoi(1);
 }

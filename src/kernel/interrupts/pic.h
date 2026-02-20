@@ -1,8 +1,10 @@
 #pragma once
 #include <stdint.h>
+#include <stdbool.h>
 #include "io.h"
 #include "idt.h"
 #include "../include/stdio.h"
+#include "../keyboard/keyboard.h"
 
 
 #define IRQ0_SLEEP_TIMER_TICKS_AREA 0x1800
@@ -34,4 +36,5 @@ void clear_irq_mask(uint8_t irq);
 void remap_pic(void);
 
 __attribute__ ((interrupt)) void timer_irq0_handler(int_frame_32_t *frame);
+__attribute__ ((interrupt)) void keyboard_irq1_handler(int_frame_32_t *frame);
 void set_pit_channel_mode_frequency(const uint8_t channel, const uint8_t operating_mode, const uint16_t divisor);
