@@ -27,6 +27,7 @@ extern uint32_t *sleep_timer_ticks ;
 #define PIC_EOI    0x20 // "End of interrupt" command
 
 #define PS2_DATA_PORT 0x60      // remapped keyboard controller
+#define RTC_DATETIME_AREA 0x1610
 
 
 void send_pic_eoi(uint8_t irq);
@@ -38,3 +39,30 @@ void remap_pic(void);
 __attribute__ ((interrupt)) void timer_irq0_handler(int_frame_32_t *frame);
 __attribute__ ((interrupt)) void keyboard_irq1_handler(int_frame_32_t *frame);
 void set_pit_channel_mode_frequency(const uint8_t channel, const uint8_t operating_mode, const uint16_t divisor);
+
+
+
+typedef struct {
+    uint8_t second;
+    uint8_t minute;
+    uint8_t hour;
+    uint8_t day;
+    uint8_t month;
+    uint16_t year;
+} __attribute__ ((packed)) datetime_t;
+
+extern datetime_t *datetime ;
+
+// CMOS registers
+enum {
+    cmos_address = 0x70,
+    cmos_data = 0x71 
+};
+
+
+bool cmos_update_in_progress(void);
+uint8_t get_rtc_register(uint8_t reg);
+void enable_rtc(void);
+void disable_rtc(void);
+
+__attribute__ ((interrupt)) void cmos_rtc_irq8_handler (int_frame_32_t *frame);

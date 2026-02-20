@@ -12,12 +12,13 @@
 
 void __attribute__((section(".entry"))) kstart(BootParams *bootParams) {
   HAL_Initialize(bootParams);
-  while(1){
-  printf("Enter your name : ");
+  printf("Hello world");
+  // while(1){
+  // printf("Enter your name : ");
 
-  char* name = get();
-  printf("\nYour name is %s\n",name);
-  }
+  // char* name = get();
+  // printf("\nYour name is %s\n",name);
+  // }
 
 
 //   __asm__ __volatile__ (

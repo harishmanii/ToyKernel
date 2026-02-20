@@ -8,6 +8,11 @@ uint8_t* g_ScreenBuffer = (uint8_t*)0xB8000;
 int g_ScreenX = 0;
 int g_ScreenY = 0;
 
+void setAxis(uint16_t xaxiz,uint16_t yaxiz){
+    g_ScreenX = xaxiz;
+    g_ScreenY =yaxiz;
+}
+
 char getchr(int x, int y)
 {
     return (char)g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x)];

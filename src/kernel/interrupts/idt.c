@@ -69,10 +69,15 @@ void init_idt_32(void)
 
     set_idt_descriptor_32(0x20, timer_irq0_handler, INT_GATE_FLAGS); 
     set_idt_descriptor_32(0x21, keyboard_irq1_handler, INT_GATE_FLAGS);
+    set_idt_descriptor_32(0x28, cmos_rtc_irq8_handler, INT_GATE_FLAGS);
 
     clear_irq_mask(0); // Enable timer (will tick every ~18.2/s)
     clear_irq_mask(1); // keyboard interrupt
     clear_irq_mask(2); // Enable PIC2 line
+    clear_irq_mask(8); // Enable CMOS RTC IRQ8
+
+
+     enable_rtc();
 
      __asm__ __volatile__("sti");
 
