@@ -70,11 +70,11 @@ Goals for this stage:
 ### ✅ 3. Implement Keyboard Input (IRQs & PIC)
 - [x] Research: Read OSDev.org wiki pages for "PIC" (Programmable Interrupt Controller) and "PS/2 Keyboard".
 - [x] Remap the PIC: Write the code to remap the PIC (IRQ 0-7 -> 32-39, IRQ 8-15 -> 40-47). This is critical to avoid conflicts with CPU exceptions.
-- [ ] Write Keyboard ISR: Add an ISR for IRQ 1 (interrupt 33 after remapping).
+- [x] Write Keyboard ISR: Add an ISR for IRQ 1 (interrupt 33 after remapping).
 - [x] Handle EOI: In the ISR, send the "End of Interrupt" (EOI) signal to the PIC.
-- [ ] Read Scancode: In the ISR, read the scancode from the keyboard data port (0x60).
-- [ ] Create Scancode Map: Create a simple array to translate scancodes to ASCII characters (e.g., US QWERTY).
-- [ ] Test: Create a basic "echo" function. On each keypress, translate the scancode and print the character to the screen.
+- [x] Read Scancode: In the ISR, read the scancode from the keyboard data port (0x60).
+- [x] Create Scancode Map: Create a simple array to translate scancodes to ASCII characters (e.g., US QWERTY).
+- [x] Test: Create a basic "echo" function. On each keypress, translate the scancode and print the character to the screen.
 
 ### ✅ 4. Implement Paging (Virtual Memory)
 - [x] Research: Read OSDev.org wiki page for "Paging" and "Physical Memory Management".
