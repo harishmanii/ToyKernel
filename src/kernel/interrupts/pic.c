@@ -6,7 +6,7 @@
 
 
 uint32_t *sleep_timer_ticks = (uint32_t *)IRQ0_SLEEP_TIMER_TICKS_AREA;
-datetime_t *datetime = (datetime_t *)RTC_DATETIME_AREA;
+datetime_t *new_datetime = (datetime_t *)RTC_DATETIME_AREA;
 static bool show_datetime = false;
 
 // Send end of interrupt command to signal IRQ has been handled
@@ -235,26 +235,26 @@ __attribute__ ((interrupt)) void keyboard_irq1_handler(int_frame_32_t *frame)
 
 bool cmos_update_in_progress(void)
 {
-    outb(cmos_address, 0x8A);       // Will read from status register A, disable NMI
-    return (inb(cmos_data) & 0x80); // If register A top bit is set, CMOS update is in progress
+    outb(cmos_address, STATUS_REGISTER_A | (1 << 7) );       // Will read from status register A, disable NMI
+    return (inb(cmos_data) & (1 << 7)); // If register A top bit is set, CMOS update is in progress
 }
 
 // Get an RTC register value
 uint8_t get_rtc_register(uint8_t reg)
 {
-    outb(cmos_address, reg | 0x80);     // Disable NMI when sending register to read
+    outb(cmos_address, reg | (1 << 7));     // Disable NMI when sending register to read
     return inb(cmos_data);              // Return data at that register
 }
 
 // Enable RTC
 void enable_rtc(void)
 {
-    uint8_t prev_regB_value = get_rtc_register(0x0B);
+    uint8_t prev_regB_value = get_rtc_register(STATUS_REGISTER_B);
 
-    outb(cmos_address, 0x8B);                // Select register B again, because reading a CMOS register resets to register D
-    outb(cmos_data, prev_regB_value | 0x40); // Set bit 6 to enable periodic interrupts at default rate of 1024hz
+    outb(cmos_address, STATUS_REGISTER_B | (1 << 7));                // Select register B again, because reading a CMOS register resets to register D
+    outb(cmos_data, prev_regB_value | (1 << 6)); // Set bit 6 to enable periodic interrupts at default rate of 1024hz
 
-    get_rtc_register(0x0C);                 // Read status register C to clear out any pending IRQ8 interrupts
+    get_rtc_register(STATUS_REGISTER_C);                 // Read status register C to clear out any pending IRQ8 interrupts
 }
 
 // Disable RTC
@@ -264,15 +264,20 @@ void disable_rtc(void)
 
     __asm__ __volatile__ ("cli");   
 
-    prev_regB_value = get_rtc_register(0x0B);
+    prev_regB_value = get_rtc_register(STATUS_REGISTER_B);
 
-    outb(cmos_address, 0x8B);                // Select register B again, because reading a CMOS register resets to register D
+    outb(cmos_address, STATUS_REGISTER_B | (1 << 7));                // Select register B again, because reading a CMOS register resets to register D
     outb(cmos_data, prev_regB_value & 0xBF); // Clear bit 6 to disable periodic interrupts
 
     __asm__ __volatile__ ("sti");   
 }
 
 
+
+// here we ran the CMOS on 1024hz but we can change it by toggle the first 4 bits 2hz,64hz,1024hz which contains 8bit
+// bit 7 is NMI
+// bit 6 is periodic interrupt enable bit 
+// TODO: here we ran this using peridic interrupt but it is not easy to maintain so we need to create our own clock and only get the info during kernel startup
 __attribute__ ((interrupt)) void cmos_rtc_irq8_handler (int_frame_32_t *frame)
 {
     datetime_t new_datetime, old_datetime; 
@@ -283,31 +288,29 @@ __attribute__ ((interrupt)) void cmos_rtc_irq8_handler (int_frame_32_t *frame)
 
     rtc_ticks++;
 
-   
-
-    // If one second passed, get new date/time values
+    // If one second passed, get new date/time values 1024hz => 1024 ticks = 1s
     if (rtc_ticks % 1024 == 0) {
         
         while (cmos_update_in_progress()) ; // Wait until CMOS is done updating
 
-        new_datetime.second = get_rtc_register(0x00);
-        new_datetime.minute = get_rtc_register(0x02);
-        new_datetime.hour   = get_rtc_register(0x04);
-        new_datetime.day    = get_rtc_register(0x07);
-        new_datetime.month  = get_rtc_register(0x08);
-        new_datetime.year   = get_rtc_register(0x09);
+        new_datetime.second = get_rtc_register(RTC_SECONDS);
+        new_datetime.minute = get_rtc_register(RTC_MINUTES);
+        new_datetime.hour   = get_rtc_register(RTC_HOURS);
+        new_datetime.day    = get_rtc_register(RTC_DAY);
+        new_datetime.month  = get_rtc_register(RTC_MONTH);
+        new_datetime.year   = get_rtc_register(RTC_YEAR);
 
         do {
             old_datetime = new_datetime;
 
             while (cmos_update_in_progress()) ; // Wait until CMOS is done updating
 
-            new_datetime.second = get_rtc_register(0x00);
-            new_datetime.minute = get_rtc_register(0x02);
-            new_datetime.hour   = get_rtc_register(0x04);
-            new_datetime.day    = get_rtc_register(0x07);
-            new_datetime.month  = get_rtc_register(0x08);
-            new_datetime.year   = get_rtc_register(0x09);
+            new_datetime.second = get_rtc_register(RTC_SECONDS);
+            new_datetime.minute = get_rtc_register(RTC_MINUTES);
+            new_datetime.hour   = get_rtc_register(RTC_HOURS);
+            new_datetime.day    = get_rtc_register(RTC_DAY);
+            new_datetime.month  = get_rtc_register(RTC_MONTH);
+            new_datetime.year   = get_rtc_register(RTC_YEAR);
 
         } while (
             (new_datetime.second != old_datetime.second) || 
@@ -318,7 +321,7 @@ __attribute__ ((interrupt)) void cmos_rtc_irq8_handler (int_frame_32_t *frame)
             (new_datetime.year   != old_datetime.year)
           );
 
-        regB_value = get_rtc_register(0x0B);
+        regB_value = get_rtc_register(STATUS_REGISTER_B);
 
         // Convert BCD values to binary if needed (bit 2 is clear)
         if (!(regB_value & 0x04)) {
@@ -331,40 +334,23 @@ __attribute__ ((interrupt)) void cmos_rtc_irq8_handler (int_frame_32_t *frame)
         }
 
         // Convert 12hr to 24hr if needed (bit 1 is clear in register B and top bit of hour is set)
-        if (!(regB_value & 0x02) && (new_datetime.hour & 0x80)) {
+       if (!(regB_value & 0x02))
             new_datetime.hour = ((new_datetime.hour & 0x7F) + 12) % 24;
-        }
+        
 
         // Get year 
         new_datetime.year += 2000;
-
-        // Set datetime values in memory
-        *datetime = new_datetime;
-
-        //datetime->second = new_datetime.second;
-        //datetime->minute = new_datetime.minute;
-        //datetime->hour   = new_datetime.hour;
-        //datetime->day    = new_datetime.day;
-        //datetime->month  = new_datetime.month;
-        //datetime->year   = new_datetime.year;
-
-        // Print date/time on screen
-        //  printf("\ntick: %d , status : %d\n",rtc_ticks,show_datetime);
-        // if (show_datetime) {
         
         setAxis(58,1);
         printf("%d-%s%d-%s%d %s%d:%s%d:%s%d",
-                                datetime->year,
-                                (datetime->month<10?"0":""),datetime->month,
-                                (datetime->day<10?"0":""),datetime->day,
-                                (datetime->hour<10?"0":""),datetime->hour,
-                                (datetime->minute<10?"0":""),datetime->minute,
-                                (datetime->second<10?"0":""),datetime->second);
+                                new_datetime.year,
+                                (new_datetime.month<10?"0":""),new_datetime.month,
+                                (new_datetime.day<10?"0":""),new_datetime.day,
+                                (new_datetime.hour<10?"0":""),new_datetime.hour,
+                                (new_datetime.minute<10?"0":""),new_datetime.minute,
+                                (new_datetime.second<10?"0":""),new_datetime.second);
           
-        // }
     }
-
-    // Read register C so that future IRQ8s can occur
     get_rtc_register(0x0C);
 
     send_pic_eoi(8);

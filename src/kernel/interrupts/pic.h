@@ -59,6 +59,22 @@ enum {
     cmos_data = 0x71 
 };
 
+enum{
+    STATUS_REGISTER_A = 0x0A,
+    STATUS_REGISTER_B = 0x0B,
+    STATUS_REGISTER_C = 0x0C,
+    STATUS_REGISTER_D = 0x0D
+};
+
+enum{
+    RTC_SECONDS = 0x00,
+    RTC_MINUTES = 0x02,
+    RTC_HOURS = 0x04,
+    RTC_DAY = 0x07,
+    RTC_MONTH = 0x08,
+    RTC_YEAR = 0x09
+};
+
 
 bool cmos_update_in_progress(void);
 uint8_t get_rtc_register(uint8_t reg);
