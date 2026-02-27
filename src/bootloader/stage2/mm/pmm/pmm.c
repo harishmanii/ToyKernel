@@ -230,8 +230,6 @@ void INIT_MEMORY(BootParams* bootParams)
     setup_memory_bitmap();
     reserve_memory(); 
 
-
-
 }
 
 

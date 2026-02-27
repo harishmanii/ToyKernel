@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../include/stdio.h"
+#include "../mm/handler/malloc.h"
 #include "exceptions.h"
 #include "pic.h"
 

@@ -77,7 +77,7 @@ void init_idt_32(void)
 //    clear_irq_mask(8); // Enable CMOS RTC IRQ8
 
 
-    enable_rtc();
+    //enable_rtc();
 
     __asm__ __volatile__("sti");
 

@@ -272,8 +272,6 @@ void disable_rtc(void)
     __asm__ __volatile__ ("sti");   
 }
 
-
-
 // here we ran the CMOS on 1024hz but we can change it by toggle the first 4 bits 2hz,64hz,1024hz which contains 8bit
 // bit 7 is NMI
 // bit 6 is periodic interrupt enable bit 

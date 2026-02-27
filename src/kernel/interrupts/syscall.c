@@ -27,10 +27,48 @@ void syscall_sleep(void)
 
 
 
+//memory
+
+// Allocate uninitialized memory
+// INPUT:
+//   EBX = size in bytes to allocate
+void syscall_malloc(void)
+{
+    uint32_t bytes = 0;
+
+    __asm__ __volatile__ ("mov %%EBX, %0" : "=b"(bytes) );
+
+    // First malloc() from the calling program?
+    if (!malloc_list_head)
+        malloc_init(bytes); // Yes, set up initial memory/linked list
+
+    void *ptr = malloc_next_block(bytes);
+
+    merge_free_blocks();    // Combine consecutive free blocks of memory
+
+    // Return pointer to malloc-ed memory
+    __asm__ __volatile__ ("mov %0, %%EAX" : : "r"(ptr) );
+}
+
+// Free allocated memory at a pointer
+// INPUT:
+//   EBX = pointer to malloc-ed bytes
+void syscall_free(void)
+{
+    void *ptr = 0;
+
+    __asm__ __volatile__ ("mov %%EBX, %0" : "=b"(ptr) );
+
+    malloc_free(ptr);
+}
+
+
 void *syscalls[MAX_SYSCALLS] = {
     syscall_test0,
     syscall_test1,
-    syscall_sleep
+    syscall_sleep,
+    syscall_malloc,
+    syscall_free
 };
 
 __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
@@ -43,9 +81,9 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
     // Already on stack: SS, SP, FLAGS, CS, IP
     // Need to push: AX, GS, FS, ES, DS, BP, DI, SI, DX, CX, BX
     
-    __asm__ __volatile__ (".intel_syntax noprefix\n"
+   __asm__ __volatile__ (".intel_syntax noprefix\n"
 
-                          ".equ MAX_SYSCALLS, 3\n"  // Have to define again, inline asm does not see the #define
+                          ".equ MAX_SYSCALLS, 5\n"  // Have to define again, inline asm does not see the #define
 
                           "cmp eax, MAX_SYSCALLS-1\n"   // syscalls table is 0-based
                           "ja invalid_syscall\n"        // invalid syscall number, skip and return
@@ -78,6 +116,7 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
                           "iretd\n"         // Need interrupt return here! iret, NOT ret
 
                           "invalid_syscall:\n"
+                          "mov eax, -1\n"   // Error will be -1
                           "iretd\n"
 
                           ".att_syntax");

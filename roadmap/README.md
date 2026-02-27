@@ -44,13 +44,13 @@ Goals for this stage:
 - [x] Interrupt Descriptor Table (IDT)
 - [x] PIC (8259) remapping
 - [x] Exception & IRQ handlers
-- [ ] Keyboard driver
+- [x] Keyboard driver
 - [x] PIT (Programmable Interval Timer)
-- [ ] CMOS RTC
+- [x] CMOS RTC
 
 #### 🟥 Future Modules (Optional)
 - [ ] Simple filesystem
-- [ ] Syscalls
+- [x] Syscalls
 - [ ] Basic multitasking
 - [ ] User mode
 - [ ] Shell

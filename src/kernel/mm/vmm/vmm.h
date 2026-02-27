@@ -3,7 +3,6 @@
 #include "../../include/string.h"
 #include "../memory.h"
 
-
 #define PAGES_PER_TABLE 1024
 #define TABLES_PER_DIRECTORY 1024
 #define PAGE_SIZE 4096
@@ -61,3 +60,8 @@ typedef struct {
 } page_directory;
 
 bool INITIALIZE_VMEMORY(void);
+
+pt_entry *get_page(const virtual_address address);
+void unmap_page(void *virt_address);
+bool map_page(void *phys_address,void *virt_address );
+void* allocate_page(pt_entry *page);

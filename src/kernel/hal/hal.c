@@ -10,7 +10,7 @@ void HAL_Initialize(BootParams *bootParams)
   memset(&__bss_start, 0, (&__end) - (&__bss_start));
   clrscr();
   i686_GDT_Initialize(); // initialize and add the entry in GDT
-  // Initialize_memories(bootParams); // need to consider
+  Initialize_memories(bootParams); // need to consider
   remap_pic();
   init_idt_32();
   

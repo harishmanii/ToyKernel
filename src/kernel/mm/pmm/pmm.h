@@ -27,4 +27,5 @@ void setup_memory_bitmap();
 void reserve_memory_block(uint32_t base,uint32_t size);
 void reserve_memory();
 uintptr_t allocate_chunk();
-uintptr_t allocate_page(size_t size);
+uintptr_t allocate_block(size_t size);
+int deallocate_memory_by_size(uint32_t base,uint32_t size);
