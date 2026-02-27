@@ -32,24 +32,25 @@ Goals for this stage:
 #### 🟦 Early Kernel Setup
 - [x] Kernel linker script
 - [x] Basic C environment setup
-- [ ] VGA text mode driver
-- [ ] Global constructors support
+- [x] VGA text mode driver
+- [x] Global constructors support
 
 #### 🟩 Memory Management
-- [ ] Paging (setup and enable)
-- [ ] Physical memory manager
-- [ ] Virtual memory manager
+- [x] Paging (setup and enable)
+- [x] Physical memory manager
+- [x] Basic virtual memory manager
 
 #### 🟨 Hardware & Devices
-- [ ] Interrupt Descriptor Table (IDT)
-- [ ] PIC (8259) remapping
-- [ ] Exception & IRQ handlers
-- [ ] Keyboard driver
-- [ ] PIT (Programmable Interval Timer)
+- [x] Interrupt Descriptor Table (IDT)
+- [x] PIC (8259) remapping
+- [x] Exception & IRQ handlers
+- [x] Keyboard driver
+- [x] PIT (Programmable Interval Timer)
+- [x] CMOS RTC
 
 #### 🟥 Future Modules (Optional)
 - [ ] Simple filesystem
-- [ ] Syscalls
+- [x] Syscalls
 - [ ] Basic multitasking
 - [ ] User mode
 - [ ] Shell
@@ -67,30 +68,30 @@ Goals for this stage:
 - [x] Enable Interrupts: Add the sti instruction after the IDT is loaded to enable hardware interrupts.
 
 ### ✅ 3. Implement Keyboard Input (IRQs & PIC)
-- [ ] Research: Read OSDev.org wiki pages for "PIC" (Programmable Interrupt Controller) and "PS/2 Keyboard".
-- [ ] Remap the PIC: Write the code to remap the PIC (IRQ 0-7 -> 32-39, IRQ 8-15 -> 40-47). This is critical to avoid conflicts with CPU exceptions.
-- [ ] Write Keyboard ISR: Add an ISR for IRQ 1 (interrupt 33 after remapping).
-- [ ] Handle EOI: In the ISR, send the "End of Interrupt" (EOI) signal to the PIC.
-- [ ] Read Scancode: In the ISR, read the scancode from the keyboard data port (0x60).
-- [ ] Create Scancode Map: Create a simple array to translate scancodes to ASCII characters (e.g., US QWERTY).
-- [ ] Test: Create a basic "echo" function. On each keypress, translate the scancode and print the character to the screen.
+- [x] Research: Read OSDev.org wiki pages for "PIC" (Programmable Interrupt Controller) and "PS/2 Keyboard".
+- [x] Remap the PIC: Write the code to remap the PIC (IRQ 0-7 -> 32-39, IRQ 8-15 -> 40-47). This is critical to avoid conflicts with CPU exceptions.
+- [x] Write Keyboard ISR: Add an ISR for IRQ 1 (interrupt 33 after remapping).
+- [x] Handle EOI: In the ISR, send the "End of Interrupt" (EOI) signal to the PIC.
+- [x] Read Scancode: In the ISR, read the scancode from the keyboard data port (0x60).
+- [x] Create Scancode Map: Create a simple array to translate scancodes to ASCII characters (e.g., US QWERTY).
+- [x] Test: Create a basic "echo" function. On each keypress, translate the scancode and print the character to the screen.
 
 ### ✅ 4. Implement Paging (Virtual Memory)
-- [ ] Research: Read OSDev.org wiki page for "Paging" and "Physical Memory Management".
-- [ ] Get Memory Map: (In boot.asm) Use int 0x15, eax = 0xE820 to get a memory map from the BIOS. Save this map somewhere safe (e.g., at 0x1000).
-- [ ] Pass Memory Map: Pass the location of the memory map to your C kernel.
-- [ ] Create PMM: Write a simple Physical Memory Manager (PMM), often called a "bitmap allocator," to keep track of free/used 4KB physical pages.
-- [ ] Create Page Structures: Define C structures for a Page Directory and Page Tables.
-- [ ] Map Kernel: Write functions to map virtual addresses to physical addresses. Map your kernel (at 0x8000) and the VGA buffer (0xB8000).
-- [ ] Enable Paging: Write the assembly code to load the Page Directory address into the CR3 register and set the paging bit in CR0.
-- [ ] Test: Verify your kernel "Hello World" message still prints after paging is enabled.
+- [x] Research: Read OSDev.org wiki page for "Paging" and "Physical Memory Management".
+- [x] Get Memory Map: (In boot.asm) Use int 0x15, eax = 0xE820 to get a memory map from the BIOS. Save this map somewhere safe (e.g., at 0x1000).
+- [x] Pass Memory Map: Pass the location of the memory map to your C kernel.
+- [x] Create PMM: Write a simple Physical Memory Manager (PMM), often called a "bitmap allocator," to keep track of free/used 4KB physical pages.
+- [x] Create Page Structures: Define C structures for a Page Directory and Page Tables.
+- [x] Map Kernel: Write functions to map virtual addresses to physical addresses. Map your kernel (at 0x8000) and the VGA buffer (0xB8000).
+- [x] Enable Paging: Write the assembly code to load the Page Directory address into the CR3 register and set the paging bit in CR0.
+- [x] Test: Verify your kernel "Hello World" message still prints after paging is enabled.
 
 ### ✅ 5. Implement System Timer (PIT)
-- [ ] Research: Read OSDev.org on the "Programmable Interval Timer" (PIT).
-- [ ] Write Timer ISR: Add an ISR for IRQ 0 (interrupt 32 after remapping).
-- [ ] Set Timer Frequency: Write code to set the PIT frequency (e.g., 100 Hz).
-- [ ] Create Tick Counter: In the ISR, increment a global kernel_ticks variable and send an EOI to the PIC.
-- [ ] Test: Write a simple function to print the kernel_ticks to the screen and watch the counter go up. This is the "heartbeat" of your OS.
+- [x] Research: Read OSDev.org on the "Programmable Interval Timer" (PIT).
+- [x] Write Timer ISR: Add an ISR for IRQ 0 (interrupt 32 after remapping).
+- [x] Set Timer Frequency: Write code to set the PIT frequency (e.g., 100 Hz).
+- [x] Create Tick Counter: In the ISR, increment a global kernel_ticks variable and send an EOI to the PIC.
+- [x] Test: Write a simple function to print the kernel_ticks to the screen and watch the counter go up. This is the "heartbeat" of your OS.
 
 ### ✅ 6. Enter User-Mode & Implement System Calls
 - [ ] Research: Read OSDev.org on "Getting to User Mode", "TSS", and "System Calls".

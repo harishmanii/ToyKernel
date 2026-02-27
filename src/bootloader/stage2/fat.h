@@ -5,7 +5,6 @@
 #include "stdio.h"
 #include "memdefs.h"
 #include "string.h"
-#include "memory.h"
 #include "ctype.h"
 #include <stddef.h>
 #include "minmax.h"

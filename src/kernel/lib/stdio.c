@@ -1,6 +1,4 @@
-#include <stdint.h>
-#include <stdarg.h>
-#include "../include/x86.h"
+#include "../include/stdio.h"
 
 const unsigned int SCREEN_WIDTH = 80;
 const unsigned int SCREEN_HEIGHT = 25;
@@ -9,6 +7,11 @@ const uint8_t DEFAULT_COLOR = 0x7;
 uint8_t* g_ScreenBuffer = (uint8_t*)0xB8000;
 int g_ScreenX = 0;
 int g_ScreenY = 0;
+
+void setAxis(uint16_t xaxiz,uint16_t yaxiz){
+    g_ScreenX = xaxiz;
+    g_ScreenY =yaxiz;
+}
 
 char getchr(int x, int y)
 {
@@ -309,4 +312,34 @@ void print_buffer(const char* msg, const void* buffer, uint16_t count)
         putc(g_HexChars[u8Buffer[i] & 0xF]);
     }
     puts("\n");
+}
+
+
+char* get(){
+    //need to work on this completely
+    static char buffer[INPUT_SIZE]; //once vm implemented use heap instead of stack
+    int index = 0;
+    while (1) {
+        char key = get_key();
+
+        if (key == 0x0D) {  // Enter
+            buffer[index] = '\0';
+            break;
+        }
+
+        if (key == 0x08) {  
+            if (index > 0) {
+                index--;
+                //TODO: need to work on this
+            }
+        }
+        else {
+            if (index < INPUT_SIZE - 1) {
+                buffer[index] = key;
+                index++;
+                putc(key);  // echo
+            }
+        }
+  }
+  return buffer;
 }

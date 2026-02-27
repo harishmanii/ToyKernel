@@ -22,3 +22,5 @@
 // 0x000C8000 - 0x000FFFFF - BIOS
 
 #define MEMORY_KERNEL_ADDR  ((void*)0x100000)
+
+#define HIGHER_HALF_KERNEL  ((void*)0xC0000000)
