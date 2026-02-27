@@ -38,7 +38,7 @@ Goals for this stage:
 #### 🟩 Memory Management
 - [x] Paging (setup and enable)
 - [x] Physical memory manager
-- [ ] Virtual memory manager
+- [x] Basic virtual memory manager
 
 #### 🟨 Hardware & Devices
 - [x] Interrupt Descriptor Table (IDT)
