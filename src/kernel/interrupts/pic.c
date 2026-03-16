@@ -5,7 +5,7 @@
 */
 
 
-uint32_t *sleep_timer_ticks = (uint32_t *)IRQ0_SLEEP_TIMER_TICKS_AREA;
+uint32_t sleep_timer_ticks = 0;
 datetime_t *new_datetime = (datetime_t *)RTC_DATETIME_AREA;
 static bool show_datetime = false;
 
@@ -106,11 +106,21 @@ void remap_pic(void)
 }
 
 
-__attribute__ ((interrupt)) void timer_irq0_handler(int_frame_32_t *frame)
+void timer_irq0_handler(int_frame_32_t *frame)
 {
-    if (*sleep_timer_ticks > 0) (*sleep_timer_ticks)--;
+ if (sleep_timer_ticks > 0) {
+        sleep_timer_ticks--;
+    }
 
-    send_pic_eoi(0);
+    if (sleep_timer_ticks <1) {
+        sleep_timer_ticks = 5; //5 - 5ms , 100 - 1s
+        send_pic_eoi(0);    // need to acknoweldge the interrupt first otherwise interrupt will not work
+        schedule();         // called the schedule to switch the next task
+        return;
+    }
+
+
+    send_pic_eoi(0);        // if not called the interrupt will be keep on listening for ack 
 }
 
 void set_pit_channel_mode_frequency(const uint8_t channel, const uint8_t operating_mode, const uint16_t divisor)

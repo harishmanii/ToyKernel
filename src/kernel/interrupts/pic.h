@@ -5,12 +5,13 @@
 #include "idt.h"
 #include "../include/stdio.h"
 #include "../keyboard/keyboard.h"
+#include "../scheduler/task.h"
 
 
 #define IRQ0_SLEEP_TIMER_TICKS_AREA 0x1800
 #define RTC_DATETIME_AREA 0x1610
 
-extern uint32_t *sleep_timer_ticks ;
+extern uint32_t sleep_timer_ticks ;
 
 
 #define PIC_1_CMD  0x20     // input port
@@ -81,4 +82,4 @@ uint8_t get_rtc_register(uint8_t reg);
 void enable_rtc(void);
 void disable_rtc(void);
 
-__attribute__ ((interrupt)) void cmos_rtc_irq8_handler (int_frame_32_t *frame);
+ void cmos_rtc_irq8_handler (int_frame_32_t *frame);
