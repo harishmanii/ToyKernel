@@ -13,7 +13,7 @@
 
 void __attribute__((section(".entry"))) kstart(BootParams *bootParams) {
   HAL_Initialize(bootParams);
-  printf("Hello world\ntesting heap allocator \n");
+  printf("Hello world\n");
   // while(1){
   // printf("Enter your name : ");
 

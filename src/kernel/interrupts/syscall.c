@@ -18,11 +18,11 @@ void syscall_test1(void)
 //  EBX = # of milliseconds
 void syscall_sleep(void)
 {
-    //__asm__ __volatile__ ("movl %%ebx, %0" : "=r"(*sleep_timer_ticks) );
-    __asm__ __volatile__ ("mov %%ebx, %0" : "=r"(*sleep_timer_ticks) );
+    // //__asm__ __volatile__ ("movl %%ebx, %0" : "=r"(*sleep_timer_ticks) );
+    // __asm__ __volatile__ ("mov %%ebx, %0" : "=r"(*sleep_timer_ticks) );
 
-    // Wait ("Sleep") until # of ticks is 0
-    while (*sleep_timer_ticks > 0) __asm__ __volatile__ ("sti;hlt;cli");
+    // // Wait ("Sleep") until # of ticks is 0
+    // while (*sleep_timer_ticks > 0) __asm__ __volatile__ ("sti;hlt;cli");
 }
 
 

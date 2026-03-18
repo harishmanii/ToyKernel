@@ -5,7 +5,7 @@
 // ebx is time
 void sleep(const uint16_t seconds) 
 {
-    __asm__ __volatile__("int $0x80" : : "a"(2), "b"(seconds*1000) );
+    __asm__ __volatile__("int $0x80" : : "a"(2), "b"((seconds*100)) );
 }
 
 // Sleep for a given number of milliseconds

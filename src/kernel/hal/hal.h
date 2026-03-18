@@ -7,6 +7,7 @@
 #include "../include/string.h"
 #include "../interrupts/idt.h"
 #include "../interrupts/pic.h"
+#include "../scheduler/task.h"
 
 
 #include "memory.h"

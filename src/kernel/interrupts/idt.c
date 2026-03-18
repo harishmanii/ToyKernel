@@ -81,7 +81,7 @@ void init_idt_32(void)
 
     __asm__ __volatile__("sti");
 
-     uint16_t divisor = 100;
+     uint16_t divisor = 11932;
      uint16_t rate_generator_mode = 2;
      uint16_t channel = 0;
 
