@@ -8,9 +8,8 @@ then if a user program needs memory it simply calls the malloc to get the memory
 
 #include "malloc.h"
 
-malloc_block_t *malloc_list_head = 0;    // Start of linked list
-// this will changed on second stage
-uint32_t malloc_virt_address     = 0;
+malloc_block_t *malloc_list_head = 0;            // Start of linked list
+uint32_t malloc_virt_address     = KERNEL_HEAP_START;
 uint32_t malloc_phys_address     = 0;
 uint32_t total_malloc_pages      = 0;
 

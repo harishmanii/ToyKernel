@@ -9,7 +9,9 @@
 
 
 //variable declration
-#define PAGE_SIZE 4096
+#define PAGE_SIZE          4096
+#define KERNEL_HEAP_START  0xD1000000
+#define KERNEL_HEAP_MAX    0xD2000000
 // Singly linked list nodes for blocks of memory
 typedef struct malloc_block {
     uint32_t size;  // Size of this memory block in bytes

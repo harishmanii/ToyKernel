@@ -11,7 +11,7 @@
 */
 
 
-void __attribute__((section(".entry"))) kstart(BootParams *bootParams) {
+void kstart(BootParams *bootParams) {
   HAL_Initialize(bootParams);
   printf("Hello world\n");
   // while(1){

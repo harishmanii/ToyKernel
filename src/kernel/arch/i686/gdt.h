@@ -1,8 +1,11 @@
 #pragma once
 #include <stdint.h>
 
-#define i686_GDT_CODE_SEGMENT 0x08
-#define i686_GDT_DATA_SEGMENT 0x10
+#define i686_GDT_CODE_SEGMENT      0x08    // Ring 0 code segment
+#define i686_GDT_DATA_SEGMENT      0x10    // Ring 0 data segment
+#define i686_GDT_USER_CODE_SEGMENT 0x18    // Ring 3 code  (0x18 | 3 = 0x1B when used)
+#define i686_GDT_USER_DATA_SEGMENT 0x20    // Ring 3 data  (0x20 | 3 = 0x23 when used)
+#define i686_GDT_TSS_SEGMENT       0x28    // TSS descriptor
 
 
 /* GDT table definitions with some helper macros*/
@@ -35,6 +38,7 @@ typedef enum
     GDT_ACCESS_CODE_SEGMENT                 = 0x18,
 
     GDT_ACCESS_DESCRIPTOR_TSS               = 0x00,
+    GDT_ACCESS_TSS_AVAILABLE_32BIT          = 0x09,  // 32-bit TSS Available (type nibble)
 
     GDT_ACCESS_RING0                        = 0x00,
     GDT_ACCESS_RING1                        = 0x20,
@@ -73,5 +77,9 @@ typedef enum
 
 /* End */
 
+
+// Exposed so tss_init() can patch entry [5] with the TSS base/limit at runtime
+extern GDTEntry g_GDT[];
+extern GDTDescriptor g_GDTDescriptor;
 
 void i686_GDT_Initialize();
