@@ -4,7 +4,6 @@
 #include "../mm/vmm/vmm.h"
 #include "../mm/handler/malloc.h"
 
-#define KERNEL_HEAP_START 0xD1000000
-#define KERNEL_HEAP_MAX   0xC2000000
+/* KERNEL_HEAP_START and KERNEL_HEAP_MAX are defined in mm/handler/malloc.h */
 
 void Initialize_memories(BootParams *bootParams);

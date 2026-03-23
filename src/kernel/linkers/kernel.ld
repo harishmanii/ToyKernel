@@ -1,4 +1,4 @@
-ENTRY(kstart)
+ENTRY(kentry)
 OUTPUT_FORMAT("elf32-i386")
 
 phys = 0x00100000;
@@ -40,4 +40,12 @@ SECTIONS
 
     __end = .;
     __kernel__end = .;
+
+    .stack (NOLOAD) :
+    {
+        . = ALIGN(16);
+        __kernel_stack_bottom = .;
+        . += 8192;                  /* 8 KiB kernel stack */
+        __kernel_stack_top = .;
+    }
 }
