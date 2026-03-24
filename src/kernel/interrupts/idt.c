@@ -64,8 +64,9 @@ void init_idt_32(void)
 
     __asm__ __volatile__ ("lidt %0" : : "memory"(idtr32)); // Load IDT to IDT register
 
-    set_idt_descriptor_32(0,div_by_0_handler,TRAP_GATE_FLAGS);
-    set_idt_descriptor_32(0x80,syscall_dispatcher,INT_GATE_FLAGS);
+    set_idt_descriptor_32(0, div_by_0_handler, TRAP_GATE_FLAGS);
+    /* INT_GATE_USER_FLAGS (DPL=3) so ring-3 code can call 'int $0x80' without #GP */
+    set_idt_descriptor_32(0x80, syscall_dispatcher, INT_GATE_USER_FLAGS);
 
     set_idt_descriptor_32(0x20, timer_irq0_handler, INT_GATE_FLAGS); 
     set_idt_descriptor_32(0x21, keyboard_irq1_handler, INT_GATE_FLAGS);

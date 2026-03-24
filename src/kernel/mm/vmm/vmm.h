@@ -62,6 +62,9 @@ typedef struct {
 bool INITIALIZE_VMEMORY(void);
 
 pt_entry *get_page(const virtual_address address);
+void flush_tlb_entry(virtual_address address);
 void unmap_page(void *virt_address);
-bool map_page(void *phys_address,void *virt_address );
+bool map_page(void *phys_address, void *virt_address);
+bool map_page_user(void *phys_address, void *virt_address);
+
 void* allocate_page(pt_entry *page);
