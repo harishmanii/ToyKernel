@@ -6,7 +6,6 @@ Task *current_task;
 
 static uint16_t next_taskId = 0;
 
-//0xc0000060
 extern void task_entry_trampoline(void);
 
 void idle_task()
@@ -80,17 +79,6 @@ Task* create_task(void (*entry)()){
     return t;
 }
 
-/* ------------------------------------------------------------------
- * Ring-3 task support
- * ------------------------------------------------------------------
- *
- * When a user task gets scheduled, switch_task() restores its kernel
- * stack and returns into task_entry_trampoline, which enables
- * interrupts and then rets into usermode_trampoline().
- * usermode_trampoline() points TSS.esp0 at the top of the kernel
- * stack (so the CPU can find it on the next ring-0 entry) and then
- * calls enter_usermode() which irets to ring 3 – it never returns.
- */
 static void usermode_trampoline(void)
 {
     enter_usermode(current_task->user_eip, current_task->user_esp);
@@ -153,9 +141,6 @@ void schedule(){
     current_task->state = TASK_RUNNIG;
 
     // Keep TSS.esp0 pointing to the top of the new task's kernel stack.
-    // The CPU reads this on every Ring 3 → Ring 0 transition (interrupt /
-    // syscall) so it knows where to put the exception frame.
     tss_set_kernel_stack((uint32_t)((uint8_t*)current_task + sizeof(Task) + STACK_SIZE));
-
     switch_task(prev,current_task);
 }

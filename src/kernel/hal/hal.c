@@ -41,7 +41,7 @@ void HAL_Initialize(BootParams *bootParams)
   init_task();
   //create_task(task1);
   //create_task(task2);
-  create_user_task(user_program);
+  //create_user_task(user_program);
   
 }
 

@@ -1,6 +1,7 @@
 #include "syscall.h"
 
-#define MAX_SYSCALLS 5
+
+#define MAX_SYSCALLS 6
 
 // Test syscall 0
 void syscall_test0(void)
@@ -11,6 +12,12 @@ void syscall_test0(void)
 void syscall_test1(void)
 {
     printf("SYSCALL testing 1");
+}
+
+void syscall_print(void){
+    uint32_t val = 0;
+    __asm__ __volatile__ ("mov %%ebx, %0" : "=r"(val) );
+    put_c((char)val);
 }
 
 // Sleep for a given number of milliseconds
@@ -68,7 +75,8 @@ void *syscalls[MAX_SYSCALLS] = {
     syscall_test1,
     syscall_sleep,
     syscall_malloc,
-    syscall_free
+    syscall_free,
+    syscall_print
 };
 
 __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
@@ -83,7 +91,7 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
     
    __asm__ __volatile__ (".intel_syntax noprefix\n"
 
-                          ".equ MAX_SYSCALLS, 5\n"  // Have to define again, inline asm does not see the #define
+                          ".equ MAX_SYSCALLS, 6\n"  // Have to define again, inline asm does not see the #define
 
                           "cmp eax, MAX_SYSCALLS-1\n"   // syscalls table is 0-based
                           "ja invalid_syscall\n"        // invalid syscall number, skip and return
