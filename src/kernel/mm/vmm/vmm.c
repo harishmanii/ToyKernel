@@ -182,6 +182,42 @@ bool map_page(void *phys_address,void *virt_address )
 }
 
 
+bool map_page_user(void *phys_address, void *virt_address)
+{
+    page_directory *pd = current_page_directory;
+
+    pd_entry *entry = &pd->entries[PD_INDEX((uint32_t)virt_address)];
+
+    if ((*entry & PDE_PRESENT) != PDE_PRESENT) {
+        /* No page table yet – allocate and initialise one. */
+        page_table *table = (page_table *)allocate_block(1);
+        if (!table) return false;
+        memset(table, 0, sizeof(page_table));
+
+        pd_entry *e = &pd->entries[PD_INDEX((uint32_t)virt_address)];
+        SET_ATTRIBUTE(e, PDE_PRESENT);
+        SET_ATTRIBUTE(e, PDE_READ_WRITE);
+        SET_ATTRIBUTE(e, PDE_USER);          /* allow ring-3 access to this table */
+        SET_FRAME(e, (physical_address)table);
+    } else {
+        /* Page table already exists – ensure the USER bit is set on the PDE. */
+        SET_ATTRIBUTE(entry, PDE_USER);
+    }
+
+    /* Re-read entry after possible modification above. */
+    entry = &pd->entries[PD_INDEX((uint32_t)virt_address)];
+    page_table *table = (page_table *)PAGE_PHYS_ADDRESS(entry);
+
+    pt_entry *page = &table->entries[PT_INDEX((uint32_t)virt_address)];
+    SET_ATTRIBUTE(page, PTE_PRESENT);
+    SET_ATTRIBUTE(page, PTE_READ_WRITE);
+    SET_ATTRIBUTE(page, PTE_USER);           /* allow ring-3 access to this page */
+    SET_FRAME(page, (uint32_t)phys_address);
+
+    flush_tlb_entry((virtual_address)virt_address);
+    return true;
+}
+
 bool INITIALIZE_VMEMORY(void)
 {
     setup_page_directory_table();

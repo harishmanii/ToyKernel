@@ -106,7 +106,7 @@ void remap_pic(void)
 }
 
 
-void timer_irq0_handler(int_frame_32_t *frame)
+__attribute__((interrupt)) void timer_irq0_handler(int_frame_32_t *frame)
 {
  if (sleep_timer_ticks > 0) {
         sleep_timer_ticks--;
