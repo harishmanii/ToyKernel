@@ -2,9 +2,9 @@
 
 ---
 
-## ✅ Already Built (Your Actual Baseline)
+## ✅ Already Built (Our Actual Baseline)
 
-These are fully working in your kernel right now:
+These are fully working in our kernel right now:
 
 | Component | Notes |
 |---|---|
@@ -27,7 +27,7 @@ These are fully working in your kernel right now:
 
 # Phase 1 — Preemptive Scheduling
 
-> **Why first:** Your scheduler is cooperative right now. Real OSes never rely on tasks yielding voluntarily. This is the most fundamental OS concept.
+> **Why first:** Our scheduler is cooperative right now. Real OSes never rely on tasks yielding voluntarily. This is the most fundamental OS concept.
 
 ### Steps
 
@@ -45,14 +45,14 @@ These are fully working in your kernel right now:
 
 # Phase 2 — Blocking Scheduler + Sleep
 
-> **Why next:** BLOCKED state already exists in your enum but nothing uses it. This makes multitasking actually useful.
+> **Why next:** BLOCKED state already exists in our enum but nothing uses it. This makes multitasking actually useful.
 
 ### Steps
 
 - [ ] Implement `task_sleep(uint32_t ms)` — set task state to `TASK_BLOCKED`, store a `wake_tick` in the Task struct
 - [ ] In the PIT handler, walk the task list and wake any task whose `wake_tick <= kernel_ticks`
 - [ ] Implement `task_block()` / `task_unblock()` — generic block/unblock primitives
-- [ ] Wire `sys_sleep` syscall (EBX = ms) to call `task_sleep` (your `syscall_sleep` is already stubbed)
+- [ ] Wire `sys_sleep` syscall (EBX = ms) to call `task_sleep` (our `syscall_sleep` is already stubbed)
 - [ ] Test: user task calls `int 0x80` with sleep syscall, kernel task keeps printing — they should interleave
 
 ### What you learn
@@ -88,7 +88,7 @@ These are fully working in your kernel right now:
 
 ### Steps
 
-- [ ] Your IDT already has exception #14 (page fault) — make its handler read `CR2` (fault address) and the error code
+- [ ] Our IDT already has exception #14 (page fault) — make its handler read `CR2` (fault address) and the error code
 - [ ] Decode the error code bits: `present`, `write`, `user`
 - [ ] If fault is in user space (user bit set) → terminate the offending task (`task_exit`), print fault info
 - [ ] If fault is in kernel space → full kernel panic (print CR2, error code, halt)
@@ -113,7 +113,7 @@ These are fully working in your kernel right now:
 - [ ] For each `PT_LOAD` segment: allocate pages at the given virtual address, copy segment data into them
 - [ ] Set up user stack at a fixed virtual address (you already have `USER_STACK_VIRT`)
 - [ ] Return the entry point (`e_entry`) and jump to it via `iret` in ring 3
-- [ ] For now, embed a tiny ELF binary as a `uint8_t[]` array in your kernel to test (no disk read needed yet)
+- [ ] For now, embed a tiny ELF binary as a `uint8_t[]` array in our kernel to test (no disk read needed yet)
 - [ ] Test: the embedded ELF runs and makes a syscall to print something
 
 ### What you learn
@@ -130,7 +130,7 @@ These are fully working in your kernel right now:
 ### Steps
 
 - [ ] Write a kernel ATA PIO driver (read sectors via port I/O — ports `0x1F0`–`0x1F7`)
-- [ ] Port your stage2 FAT12 reader into the kernel (mostly reuse the existing code)
+- [ ] Port our stage2 FAT12 reader into the kernel (mostly reuse the existing code)
 - [ ] Implement `fat_open(const char *path)` → returns a buffer with file contents
 - [ ] Use `elf_load()` from Phase 5 to load an ELF binary read from the FAT12 disk image
 - [ ] Test: place a small ELF binary on the disk image, boot the kernel, have it load and run that binary
@@ -148,13 +148,13 @@ These are fully working in your kernel right now:
 
 ### Steps
 
-- [ ] Formalize your syscall table (EAX = number, EBX/ECX/EDX = args)
+- [ ] Formalize our syscall table (EAX = number, EBX/ECX/EDX = args)
 - [ ] Implement `sys_write(int fd, const char *buf, size_t len)` — fd 1 = stdout (VGA)
 - [ ] Implement `sys_exit(int code)` — terminates current task cleanly, frees memory
 - [ ] Implement `sys_getpid()` — returns current task's PID
 - [ ] Validate all user pointers before dereferencing in the kernel (`copy_from_user`)
 - [ ] Write a minimal `libc` for user programs: `write()`, `exit()`, `puts()` wrappers around `int 0x80`
-- [ ] Test: a user program compiled with your libc that prints "Hello from user space!" and exits cleanly
+- [ ] Test: a user program compiled with our libc that prints "Hello from user space!" and exits cleanly
 
 ### What you learn
 - The contract between user space and kernel space
