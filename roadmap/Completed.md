@@ -49,11 +49,11 @@ Goals for this stage:
 - [x] CMOS RTC
 
 #### 🟥 Future Modules (Optional)
-- [ ] Simple filesystem
+- [ ] Simple filesystem (work on the next roadmap)
 - [x] Syscalls
-- [ ] Basic multitasking
-- [ ] User mode
-- [ ] Shell
+- [x] Basic multitasking
+- [x] User mode
+- [ ] Shell (work on the next roadmap)
 
 ---
 
@@ -94,14 +94,14 @@ Goals for this stage:
 - [x] Test: Write a simple function to print the kernel_ticks to the screen and watch the counter go up. This is the "heartbeat" of your OS.
 
 ### ✅ 6. Enter User-Mode & Implement System Calls
-- [ ] Research: Read OSDev.org on "Getting to User Mode", "TSS", and "System Calls".
-- [ ] Update GDT: Add Ring 3 (user) code and data segment descriptors to your GDT.
-- [ ] Create TSS: Create a Task State Segment (TSS) and a GDT entry for it. The TSS tells the CPU where to find the kernel's stack when an interrupt happens in user-mode.
-- [ ] Write Syscall Handler: Set up an interrupt handler for a chosen vector (e.g., int 0x80). This will be your system call gate.
-- [ ] Implement puts Syscall: Make your syscall handler check a number (e.g., in EAX) and, if it's 1, call your kernel's puts function.
-- [ ] Create Test Program: Write a tiny user-mode test function (it can be an array of bytes in your kernel for now) that loads a string address and calls int 0x80.
-- [ ] Jump to User-Mode: Set up a user-mode stack and use the iret instruction to jump from Ring 0 (kernel-mode) "down" to Ring 3 (user-mode) and execute your test program.
-- [ ] Test: Verify your user program runs and its int 0x80 call successfully prints a message to the screen using your kernel's puts function.
+- [x] Research: Read OSDev.org on "Getting to User Mode", "TSS", and "System Calls".
+- [x] Update GDT: Add Ring 3 (user) code and data segment descriptors to your GDT.
+- [x] Create TSS: Create a Task State Segment (TSS) and a GDT entry for it. The TSS tells the CPU where to find the kernel's stack when an interrupt happens in user-mode.
+- [x] Write Syscall Handler: Set up an interrupt handler for a chosen vector (e.g., int 0x80). This will be your system call gate.
+- [x] Implement puts Syscall: Make your syscall handler check a number (e.g., in EAX) and, if it's 1, call your kernel's puts function.
+- [x] Create Test Program: Write a tiny user-mode test function (it can be an array of bytes in your kernel for now) that loads a string address and calls int 0x80.
+- [x] Jump to User-Mode: Set up a user-mode stack and use the iret instruction to jump from Ring 0 (kernel-mode) "down" to Ring 3 (user-mode) and execute your test program.
+- [x] Test: Verify your user program runs and its int 0x80 call successfully prints a message to the screen using your kernel's puts function.
 
 
 
