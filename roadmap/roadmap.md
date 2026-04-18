@@ -27,11 +27,10 @@ These are fully working in our kernel right now:
 
 ## 📍 Current Stage
 
-**Active Phase:** Phase 0 — Userland Code Organization  
+**Active Phase:** Phase 1 — Preemptive Scheduling  
 **Status:** 🔴 Not started
 
-**Completed so far:** All baseline components above.  
-**Nothing in Phase 0 has been started yet.**
+**Completed so far:** All baseline components + Phase 0 (Userland Code Organization).
 
 ---
 
@@ -39,8 +38,8 @@ These are fully working in our kernel right now:
 
 | Phase | Title | Status |
 |---|---|---|
-| Phase 0 | Userland Code Organization | 🔴 Not Started |
-| Phase 1 | Preemptive Scheduling | ⏳ Blocked on Phase 0 |
+| Phase 0 | Userland Code Organization | ✅ Done |
+| Phase 1 | Preemptive Scheduling | 🔴 Not Started — **Active** |
 | Phase 2 | Blocking Scheduler + Sleep | ⏳ Blocked on Phase 1 |
 | Phase 3 | Per-Process Address Space Isolation | ⏳ Blocked on Phase 2 |
 | Phase 4 | Page Fault Handler (Robust) | ⏳ Blocked on Phase 3 |
@@ -51,21 +50,21 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 0 — Userland Code Organization 🔴 Not Started
+# Phase 0 — Userland Code Organization ✅ Done
 
 > **Why first:** Right now `user_program()` lives in kernel space (`hal.c`). Before building any real userland features, we must physically separate user code from kernel code at the linker level. This is the foundation everything else depends on.
 
 ### Steps
 
-- [ ] Create `src/kernel/userland/` directory — all ring-3 code lives here
-- [ ] Create `src/kernel/userland/user_programs.c` — move `user_program()` here, tag it `__attribute__((section(".user_text")))`
-- [ ] Create `src/kernel/userland/syscall_stubs.c` + `syscall_stubs.h` — thin wrappers around `int $0x80` (`sys_write`, `sys_exit`, `sys_getpid`)
-- [ ] Add a `.user_text` output section to `src/kernel/linkers/kernel.ld` placed at `USER_CODE_VIRT` (`0x00400000`) physical address, with `__user_start` / `__user_end` symbols exported
-- [ ] Update `create_user_task()` in `task.c` — instead of re-mapping the kernel page of the function pointer, map all pages between `__user_start` and `__user_end` with `map_page_user()`, then compute `user_eip` as `USER_CODE_VIRT + (user_fn - __user_start)`
-- [ ] Remove `user_program()` from `hal.c` and include `userland/user_programs.h` instead
-- [ ] Verify the `src/kernel/Makefile` picks up `userland/*.c` sources (the existing `find . -name "*.c"` glob already covers it)
-- [ ] Test: boot the kernel — user task runs correctly via the re-mapped `.user_text` section
-- [ ] Intentionally break it: call `printf` from inside `user_program` and confirm it triggers a General Protection Fault (proving the ring-3 isolation works)
+- [x] Create `src/kernel/userland/` directory — all ring-3 code lives here
+- [x] Create `src/kernel/userland/user_programs.c` — move `user_program()` here, tag it `__attribute__((section(".user_text")))`
+- [x] Create `src/kernel/userland/syscall_stubs.c` + `syscall_stubs.h` — thin wrappers around `int $0x80` (`sys_write`, `sys_exit`, `sys_getpid`)
+- [x] Add a `.user_text` output section to `src/kernel/linkers/kernel.ld` placed at `USER_CODE_VIRT` (`0x00400000`) physical address, with `__user_start` / `__user_end` symbols exported
+- [x] Update `create_user_task()` in `task.c` — instead of re-mapping the kernel page of the function pointer, map all pages between `__user_start` and `__user_end` with `map_page_user()`, then compute `user_eip` correctly
+- [x] Remove `user_program()` from `hal.c` and include `userland/user_programs.h` instead
+- [x] Verify the `src/kernel/Makefile` picks up `userland/*.c` sources (the existing `find . -name "*.c"` glob already covers it)
+- [x] Test: boot the kernel — user task runs correctly via the re-mapped `.user_text` section
+- [x] Intentionally break it: call `printf` from inside `user_program` and confirm it triggers a General Protection Fault (proving the ring-3 isolation works)
 
 ### What you learn
 - How linker sections physically separate code regions
@@ -78,7 +77,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 1 — Preemptive Scheduling ⏳ Blocked
+# Phase 1 — Preemptive Scheduling 🔴 Not Started
 
 > **Why here:** Our scheduler is cooperative right now. Real OSes never rely on tasks yielding voluntarily. This is the most fundamental OS concept.
 
@@ -86,8 +85,9 @@ These are fully working in our kernel right now:
 
 - [ ] Call `schedule()` from inside the PIT IRQ0 handler (every N ticks)
 - [ ] Make sure `switch_task` is safe to call from an interrupt context (save/restore all regs via the IRQ frame)
-- [ ] Add a `time_slice` counter per task — only switch after N ticks, not every tick
-- [ ] Test: create two tasks that each print their PID in a loop without ever calling `schedule()` — both should run
+- [ ] Add a `time_slice` field to the `Task` struct in `task.h` — initialize it to N (e.g. 10) in `create_task()`
+- [ ] In the IRQ0 handler, only call `schedule()` when `current_task->time_slice` hits 0, then reset it
+- [ ] Test: create two user tasks that each print their PID in an infinite loop **without** calling `schedule()` — both should get CPU time
 
 ### What you learn
 - How the CPU is "time-shared" between tasks
@@ -249,12 +249,12 @@ These are fully working in our kernel right now:
 
 # Immediate Next Step
 
-**Phase 0 — Userland Code Organization** (start here)
+**Phase 1 — Preemptive Scheduling** (start here)
 
-1. Create `src/kernel/userland/` directory
-2. Move `user_program()` from `hal.c` into `src/kernel/userland/user_programs.c`, tag it `__attribute__((section(".user_text")))`
-3. Create `src/kernel/userland/syscall_stubs.c` + `syscall_stubs.h` with `sys_write`, `sys_exit`, `sys_getpid` using `int $0x80`
-4. Add `.user_text` section to `src/kernel/linkers/kernel.ld` at `USER_CODE_VIRT` (`0x00400000`), export `__user_start` / `__user_end`
-5. Update `create_user_task()` to map `[__user_start, __user_end)` with `map_page_user()` and compute `user_eip` correctly
-6. Boot and verify the user task still runs
-7. Confirm isolation: call `printf` from ring-3 code → expect GP fault
+1. Open `src/kernel/interrupts/pit.c` (or wherever the IRQ0 handler lives) — add a call to `schedule()` at the end of it
+2. Add a `time_slice` field to the `Task` struct in `task.h` — initialize it to N (e.g. 10) in `create_task()`
+3. In the IRQ0 handler, only call `schedule()` when `current_task->time_slice` hits 0, then reset it
+4. Verify `switch_task` saves and restores all registers correctly when called from an interrupt context (not just a manual yield)
+5. Test: create two user tasks that each print their PID in an infinite loop **without** calling `schedule()` — both should get CPU time
+
+> ⚠️ Share your `pit.c`, `task.h`, `task.c`, and `switch_task.asm` so the checklist can be verified against your actual code.
