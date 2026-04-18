@@ -6,26 +6,52 @@
 
 These are fully working in our kernel right now:
 
-| Component | Notes |
-|---|---|
-| Stage1 + Stage2 bootloader | Real mode → Protected mode, FAT12 disk read |
-| GDT | Kernel + User segments |
-| IDT | 32 CPU exceptions + IRQ handlers |
-| PIC (8259) | Remapped, EOI working |
-| VGA text driver | Kernel-side `printf` / `put_c` |
-| PMM | Bitmap allocator over BIOS memory map |
-| VMM + Paging | CR3 loaded, kernel identity-mapped |
-| PIT timer | IRQ0 handler, `kernel_ticks` counter |
-| Keyboard driver | IRQ1, scancode → ASCII |
-| Syscall gate | `int 0x80`, EAX = syscall number, EBX = arg |
-| TSS | Set up for ring-3 → ring-0 stack switch |
-| Cooperative scheduler | `switch_task` in asm, `create_task`, `schedule()` |
-| Ring-3 user tasks | `create_user_task`, `iret` into user mode |
-| Task states | `READY`, `RUNNING`, `PAUSED`, `BLOCKED`, `COMPLETED`, `TERMINATED` |
+| Component | Status | Notes |
+|---|---|---|
+| Stage1 + Stage2 bootloader | ✅ Done | Real mode → Protected mode, FAT12 disk read |
+| GDT | ✅ Done | Kernel + User segments |
+| IDT | ✅ Done | 32 CPU exceptions + IRQ handlers |
+| PIC (8259) | ✅ Done | Remapped, EOI working |
+| VGA text driver | ✅ Done | Kernel-side `printf` / `put_c` |
+| PMM | ✅ Done | Bitmap allocator over BIOS memory map |
+| VMM + Paging | ✅ Done | CR3 loaded, kernel identity-mapped |
+| PIT timer | ✅ Done | IRQ0 handler, `kernel_ticks` counter |
+| Keyboard driver | ✅ Done | IRQ1, scancode → ASCII |
+| Syscall gate | ✅ Done | `int 0x80`, EAX = syscall number, EBX = arg |
+| TSS | ✅ Done | Set up for ring-3 → ring-0 stack switch |
+| Cooperative scheduler | ✅ Done | `switch_task` in asm, `create_task`, `schedule()` |
+| Ring-3 user tasks | ✅ Done | `create_user_task`, `iret` into user mode |
+| Task states | ✅ Done | `READY`, `RUNNING`, `PAUSED`, `BLOCKED`, `COMPLETED`, `TERMINATED` |
 
 ---
 
-# Phase 0 — Userland Code Organization
+## 📍 Current Stage
+
+**Active Phase:** Phase 0 — Userland Code Organization  
+**Status:** 🔴 Not started
+
+**Completed so far:** All baseline components above.  
+**Nothing in Phase 0 has been started yet.**
+
+---
+
+## 🗺️ Phase Progress Overview
+
+| Phase | Title | Status |
+|---|---|---|
+| Phase 0 | Userland Code Organization | 🔴 Not Started |
+| Phase 1 | Preemptive Scheduling | ⏳ Blocked on Phase 0 |
+| Phase 2 | Blocking Scheduler + Sleep | ⏳ Blocked on Phase 1 |
+| Phase 3 | Per-Process Address Space Isolation | ⏳ Blocked on Phase 2 |
+| Phase 4 | Page Fault Handler (Robust) | ⏳ Blocked on Phase 3 |
+| Phase 5 | ELF Loader | ⏳ Blocked on Phase 4 |
+| Phase 6 | Filesystem (FAT12 → Kernel) | ⏳ Blocked on Phase 5 |
+| Phase 7 | Syscall Expansion + Userland libc | ⏳ Blocked on Phase 6 |
+| Phase 8 | Simple Shell | ⏳ Blocked on Phase 7 |
+
+---
+
+# Phase 0 — Userland Code Organization 🔴 Not Started
 
 > **Why first:** Right now `user_program()` lives in kernel space (`hal.c`). Before building any real userland features, we must physically separate user code from kernel code at the linker level. This is the foundation everything else depends on.
 
@@ -52,7 +78,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 1 — Preemptive Scheduling
+# Phase 1 — Preemptive Scheduling ⏳ Blocked
 
 > **Why here:** Our scheduler is cooperative right now. Real OSes never rely on tasks yielding voluntarily. This is the most fundamental OS concept.
 
@@ -70,7 +96,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 2 — Blocking Scheduler + Sleep
+# Phase 2 — Blocking Scheduler + Sleep ⏳ Blocked
 
 > **Why next:** BLOCKED state already exists in our enum but nothing uses it. This makes multitasking actually useful.
 
@@ -89,7 +115,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 3 — Per-Process Address Space Isolation
+# Phase 3 — Per-Process Address Space Isolation ⏳ Blocked
 
 > **Why here:** Right now all tasks share the same page directory. Real process isolation requires each process to have its own virtual address space.
 
@@ -109,7 +135,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 4 — Page Fault Handler (Robust)
+# Phase 4 — Page Fault Handler (Robust) ⏳ Blocked
 
 > **Why here:** Once you have per-process page directories, invalid memory accesses must be caught properly, not just panic.
 
@@ -129,7 +155,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 5 — ELF Loader
+# Phase 5 — ELF Loader ⏳ Blocked
 
 > **Why here:** Right now user tasks are kernel functions cast to function pointers. A real OS loads programs from disk.
 
@@ -150,7 +176,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 6 — Filesystem (FAT12 → Kernel)
+# Phase 6 — Filesystem (FAT12 → Kernel) ⏳ Blocked
 
 > **Why here:** You already parse FAT12 in stage2. Port that into the kernel so you can load real files from disk.
 
@@ -169,7 +195,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 7 — Syscall Expansion + Userland libc
+# Phase 7 — Syscall Expansion + Userland libc ⏳ Blocked
 
 > **Why here:** Now that you can run real programs, they need a proper syscall interface to interact with the kernel.
 
@@ -190,7 +216,7 @@ These are fully working in our kernel right now:
 
 ---
 
-# Phase 8 — Simple Shell
+# Phase 8 — Simple Shell ⏳ Blocked
 
 > **Why here:** Brings everything together. A shell is a user-mode program that uses every subsystem you built.
 
@@ -223,9 +249,12 @@ These are fully working in our kernel right now:
 
 # Immediate Next Step
 
-**Phase 0 — Userland Code Organization**
+**Phase 0 — Userland Code Organization** (start here)
 
-1. Open `src/kernel/interrupts/` and find the PIT IRQ0 handler
-2. Add a call to `schedule()` at the end of it
-3. Create two tasks that print their PID in an infinite loop without yielding
-4. Verify both tasks run
+1. Create `src/kernel/userland/` directory
+2. Move `user_program()` from `hal.c` into `src/kernel/userland/user_programs.c`, tag it `__attribute__((section(".user_text")))`
+3. Create `src/kernel/userland/syscall_stubs.c` + `syscall_stubs.h` with `sys_write`, `sys_exit`, `sys_getpid` using `int $0x80`
+4. Add `.user_text` section to `src/kernel/linkers/kernel.ld` at `USER_CODE_VIRT` (`0x00400000`), export `__user_start` / `__user_end`
+5. Update `create_user_task()` to map `[__user_start, __user_end)` with `map_page_user()` and compute `user_eip` correctly
+6. Boot and verify the user task still runs
+7. Confirm isolation: call `printf` from ring-3 code → expect GP fault
