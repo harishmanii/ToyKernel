@@ -13,5 +13,4 @@ void puts(const char* str);
 void clrscr();
 void printf(const char* fmt, ...);
 void print_buffer(const char* msg, const void* buffer, uint16_t count);
-char* get();
 void setAxis(uint16_t xaxiz,uint16_t yaxiz);

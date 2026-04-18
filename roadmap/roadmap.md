@@ -25,9 +25,36 @@ These are fully working in our kernel right now:
 
 ---
 
+# Phase 0 — Userland Code Organization
+
+> **Why first:** Right now `user_program()` lives in kernel space (`hal.c`). Before building any real userland features, we must physically separate user code from kernel code at the linker level. This is the foundation everything else depends on.
+
+### Steps
+
+- [ ] Create `src/kernel/userland/` directory — all ring-3 code lives here
+- [ ] Create `src/kernel/userland/user_programs.c` — move `user_program()` here, tag it `__attribute__((section(".user_text")))`
+- [ ] Create `src/kernel/userland/syscall_stubs.c` + `syscall_stubs.h` — thin wrappers around `int $0x80` (`sys_write`, `sys_exit`, `sys_getpid`)
+- [ ] Add a `.user_text` output section to `src/kernel/linkers/kernel.ld` placed at `USER_CODE_VIRT` (`0x00400000`) physical address, with `__user_start` / `__user_end` symbols exported
+- [ ] Update `create_user_task()` in `task.c` — instead of re-mapping the kernel page of the function pointer, map all pages between `__user_start` and `__user_end` with `map_page_user()`, then compute `user_eip` as `USER_CODE_VIRT + (user_fn - __user_start)`
+- [ ] Remove `user_program()` from `hal.c` and include `userland/user_programs.h` instead
+- [ ] Verify the `src/kernel/Makefile` picks up `userland/*.c` sources (the existing `find . -name "*.c"` glob already covers it)
+- [ ] Test: boot the kernel — user task runs correctly via the re-mapped `.user_text` section
+- [ ] Intentionally break it: call `printf` from inside `user_program` and confirm it triggers a General Protection Fault (proving the ring-3 isolation works)
+
+### What you learn
+- How linker sections physically separate code regions
+- Why ring-3 code cannot call kernel functions directly
+- The correct way to hand off code to user space via `iret`
+
+### Rules
+- Any function that runs in ring 3 **must** be tagged `__attribute__((section(".user_text")))`
+- Ring-3 functions may only use `int $0x80` for kernel services — never kernel function pointers
+
+---
+
 # Phase 1 — Preemptive Scheduling
 
-> **Why first:** Our scheduler is cooperative right now. Real OSes never rely on tasks yielding voluntarily. This is the most fundamental OS concept.
+> **Why here:** Our scheduler is cooperative right now. Real OSes never rely on tasks yielding voluntarily. This is the most fundamental OS concept.
 
 ### Steps
 
@@ -196,7 +223,7 @@ These are fully working in our kernel right now:
 
 # Immediate Next Step
 
-**Phase 1 — Preemptive Scheduling**
+**Phase 0 — Userland Code Organization**
 
 1. Open `src/kernel/interrupts/` and find the PIT IRQ0 handler
 2. Add a call to `schedule()` at the end of it

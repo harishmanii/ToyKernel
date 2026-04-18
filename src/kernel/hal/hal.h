@@ -10,7 +10,6 @@
 #include "../interrupts/pic.h"
 #include "../scheduler/task.h"
 
-
 #include "memory.h"
 
 void HAL_Initialize(BootParams *bootParams);

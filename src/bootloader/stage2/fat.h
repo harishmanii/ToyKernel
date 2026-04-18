@@ -69,6 +69,8 @@ typedef struct
 } __attribute__((packed)) FAT_BootSector;
 
 // Fat table entry
+
+//holds the single File directory entry
 typedef struct
 {
     uint8_t Buffer[SECTOR_SIZE];

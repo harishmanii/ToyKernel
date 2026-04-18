@@ -200,9 +200,6 @@ __attribute__ ((interrupt)) void keyboard_irq1_handler(int_frame_32_t *frame)
     // Shift key pressed on number row lookup table (0-9 keys)
     const uint8_t *num_row_shifts = ")!@#$%^&*(";
 
-    // Set current key to null
-    key_info->key = 0;
-
     key = inb(PS2_DATA_PORT);   // Read in new key
 
     if (key) {

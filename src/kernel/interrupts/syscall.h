@@ -11,4 +11,6 @@ void syscall_test0(void);
 void syscall_test1(void);
 void syscall_sleep(void);
 void syscall_print(void);
+void syscall_exit(void);
+void syscall_getkey(void);
 __attribute__ ((naked)) void syscall_dispatcher(int_frame_32_t *frame);

@@ -12,6 +12,7 @@ switch_task:
     mov eax, [esp+4]    ; prev
     mov edx, [esp+8]    ; next
 
+    pushfd              ;save EFLAGS (including IF) otherwise interrupt flag might missed and cause the system freeze 
     push ebp
     push ebx
     push esi
@@ -24,5 +25,6 @@ switch_task:
     pop esi
     pop ebx
     pop ebp
+    popfd               ; restore EFLAGS (including IF)
 
     ret

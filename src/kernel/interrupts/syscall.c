@@ -1,7 +1,9 @@
 #include "syscall.h"
+#include "../scheduler/task.h"
+#include "../keyboard/keyboard.h"
 
 
-#define MAX_SYSCALLS 6
+#define MAX_SYSCALLS 8
 
 // Test syscall 0
 void syscall_test0(void)
@@ -70,13 +72,33 @@ void syscall_free(void)
 }
 
 
+// Exit the current user task cleanly
+// Marks the task COMPLETED and yields to the scheduler.
+void syscall_exit(void)
+{
+    current_task->state = TASK_COMPLETED;
+    schedule();
+    /* schedule() never returns here */
+}
+
+// Return the next ASCII keypress to userland (blocking).
+// Delegates to the kernel keyboard driver which waits via HLT.
+// Return value is placed in EAX by the dispatcher.
+void syscall_getkey(void)
+{
+    uint32_t key = (uint32_t)get_key();   // get_key() blocks on ONE key, not a full line
+    __asm__ __volatile__ ("mov %0, %%eax" : : "r"(key));
+}
+
 void *syscalls[MAX_SYSCALLS] = {
     syscall_test0,
     syscall_test1,
     syscall_sleep,
     syscall_malloc,
     syscall_free,
-    syscall_print
+    syscall_print,
+    syscall_exit,       /* SYS_EXIT   = 6 */
+    syscall_getkey      /* SYS_GETKEY = 7 */
 };
 
 __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
@@ -91,7 +113,7 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
     
    __asm__ __volatile__ (".intel_syntax noprefix\n"
 
-                          ".equ MAX_SYSCALLS, 6\n"  // Have to define again, inline asm does not see the #define
+                          ".equ MAX_SYSCALLS, 8\n"  // Have to define again, inline asm does not see the #define
 
                           "cmp eax, MAX_SYSCALLS-1\n"   // syscalls table is 0-based
                           "ja invalid_syscall\n"        // invalid syscall number, skip and return

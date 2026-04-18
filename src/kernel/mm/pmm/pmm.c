@@ -228,8 +228,14 @@ void INIT_MEMORY(BootParams* bootParams)
     set_kernel_addr();
     get_memory_info(&bootParams->Memory);
     setup_memory_bitmap();
-    reserve_memory(); 
+    reserve_memory();
 
+    //reserve bootloader module memory so PMM does not allocate those frames to something else before 
+    //elf_load() copies userland bytes from that module buffer.
+    for (uint32_t i = 0; i < bootParams->ModuleCount; i++) {
+        reserve_memory_block((uintptr_t)bootParams->Modules[i].data,
+                             bootParams->Modules[i].size);
+    }
 }
 
 

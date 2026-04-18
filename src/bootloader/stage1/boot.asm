@@ -1,27 +1,27 @@
+; Used the OSwikki for ref
 org 0x7C00
 bits 16
 
-
 %define ENDL 0x0D, 0x0A
 
-
-;
-; FAT12 header
-; 
 jmp short start
 nop
 
+;
+; FAT12 header starts
+; 
+
 bdb_oem:                    db 'MSWIN4.1'           ; 8 bytes
-bdb_bytes_per_sector:       dw 512
-bdb_sectors_per_cluster:    db 1
-bdb_reserved_sectors:       dw 1
-bdb_fat_count:              db 2
-bdb_dir_entries_count:      dw 0E0h
+bdb_bytes_per_sector:       dw 512                  ; 512 bytes/sector
+bdb_sectors_per_cluster:    db 1                    ; 1 sectors/cluster
+bdb_reserved_sectors:       dw 1                    ; reserved regions
+bdb_fat_count:              db 2                    ; no of fat region
+bdb_dir_entries_count:      dw 0E0h                 ; 224 entries
 bdb_total_sectors:          dw 2880                 ; 2880 * 512 = 1.44MB
 bdb_media_descriptor_type:  db 0F0h                 ; F0 = 3.5" floppy disk
 bdb_sectors_per_fat:        dw 9                    ; 9 sectors/fat
-bdb_sectors_per_track:      dw 18
-bdb_heads:                  dw 2
+bdb_sectors_per_track:      dw 18                   ; 18 sectors/track
+bdb_heads:                  dw 2                    ; 2 heads/cylinder
 bdb_hidden_sectors:         dd 0
 bdb_large_sector_count:     dd 0
 
@@ -34,8 +34,10 @@ ebr_volume_label:           db 'Kabali OS'        ; 11 bytes, padded with spaces
 ebr_system_id:              db 'FAT12   '           ; 8 bytes
 
 ;
-; Code goes here
-;
+; FAT12 header ends
+; 
+
+
 
 start:
     
@@ -69,10 +71,18 @@ start:
     push es
     mov ah, 08h
     int 13h
-    jc floppy_error
+
+; CH → low 8 bits of cylinder number
+; CL →
+;   bits 0–5 → sectors per track
+;   bits 6–7 → high bits of cylinder
+; DH → number of heads - 1
+; DL → drive number (you passed this in)
+
+    jc floppy_error ; if Carry Flag(CF) is  1 it will execute and BIOS also sets AH = error code
     pop es
 
-    and cl, 0x3F                        ; remove top 2 bits
+    and cl, 0x3F                        ; remove top 2 bits 
     xor ch, ch
     mov [bdb_sectors_per_track], cx     ; sector count
 

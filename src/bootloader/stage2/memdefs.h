@@ -23,4 +23,11 @@
 
 #define MEMORY_KERNEL_ADDR  ((void*)0x100000)
 
+/* Staging buffer for userland modules loaded before paging is enabled.
+ * Sits in the free 0x40000–0x7FFFF low-memory region (below EBDA at 0x80000).
+ * 64 KB is more than enough for any simple hello-world ELF.
+ */
+#define MEMORY_USERLAND_ADDR ((void*)0x50000)
+#define MEMORY_USERLAND_SIZE  0x00010000   /* 64 KB */
+
 #define HIGHER_HALF_KERNEL  ((void*)0xC0000000)
