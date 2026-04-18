@@ -54,22 +54,45 @@ void __attribute__((cdecl)) start(uint16_t bootDrive)
     }
     FAT_Close(fd);
 
-    i686_GDT_Initialize(); // initialize and add the entry in GDT
-    // i686_IDT_Initialize(); // init the IDT table
-    // i686_ISR_Initialize(); // init the entry with interrupts
+    // loads userland
+    g_BootParams.ModuleCount = 0;
+    uint8_t *userlandBuf = (uint8_t *)MEMORY_USERLAND_ADDR;
+    FAT_File *ufd = FAT_Open(&disk, "/userland.elf");
+    if (ufd)
+    {
+        uint32_t totalRead = 0;
+        while ((readSize = FAT_Read(&disk, ufd, MEMORY_LOAD_SIZE, KernelLoadBuffer)))
+        {
+            memcpy(userlandBuf + totalRead, KernelLoadBuffer, readSize);
+            totalRead += readSize;
+        }
+        FAT_Close(ufd);
+
+        g_BootParams.Modules[0].data = (void *)MEMORY_USERLAND_ADDR;
+        g_BootParams.Modules[0].size = totalRead;
+        const char *modname = "userland.elf";
+        uint32_t ni = 0;
+        while (modname[ni] && ni < 31) {
+            g_BootParams.Modules[0].name[ni] = modname[ni];
+            ni++;
+        }
+        g_BootParams.Modules[0].name[ni] = '\0';
+        g_BootParams.ModuleCount = 1;
+        printf("Loaded userland.elf (%u bytes at 0x%x)\r\n",
+               totalRead, (uint32_t)MEMORY_USERLAND_ADDR);
+    }
+    else
+    {
+        printf("Warning: userland.elf not found on disk\r\n");
+    }
+
+    i686_GDT_Initialize();
     Initialize_memories(&g_BootParams);
 
     for (uint32_t virt = KERNEL_ADDRESS; virt < 0x400000; virt += PAGE_SIZE)
         unmap_page((void *)virt);
-
-    
     __asm__ __volatile__ ("movl %CR3, %ECX; movl %ECX, %CR3");
-    // *(uint32_t *)CURRENT_PAGE_DIR_ADDRESS = (uint32_t)current_page_directory;
 
-
-    // printf("The value is %p ",Kernel);
-    // print_buffer("entry bytes:", Kernel, 8);
-    // // execute kernel
     KernelStart kernelStart = (KernelStart)0xC0000000;
     kernelStart(&g_BootParams);
 

@@ -9,7 +9,7 @@ export DEBUGGING_BUILD_DIR=$(BUILD_DIR)/debugging
 
 include build_scripts/config.mk
 
-.PHONY: all floppy_image kernel bootloader clean always tools_fat run debug
+.PHONY: all floppy_image kernel bootloader clean always tools_fat run debug gdbu
 
 include build_scripts/toolchain.mk
 
@@ -22,7 +22,7 @@ all: floppy_image
 #
 floppy_image: $(IMAGE_DIR)/main_floppy.img
 
-$(IMAGE_DIR)/main_floppy.img: bootloader kernel
+$(IMAGE_DIR)/main_floppy.img: bootloader kernel userland
 	@mkdir -p $(dir $@)
 	echo "Building image..."
 	dd if=/dev/zero of=$(IMAGE_DIR)/main_floppy.img bs=512 count=2880
@@ -30,11 +30,20 @@ $(IMAGE_DIR)/main_floppy.img: bootloader kernel
 	dd if=$(BIN_BUILD_DIR)/stage1.bin of=$(IMAGE_DIR)/main_floppy.img conv=notrunc
 	mcopy -i $(IMAGE_DIR)/main_floppy.img -mv $(BIN_BUILD_DIR)/stage2.bin "::stage2.bin"
 	mcopy -i $(IMAGE_DIR)/main_floppy.img -mv $(BIN_BUILD_DIR)/kernel.bin "::kernel.bin"
+	mcopy -i $(IMAGE_DIR)/main_floppy.img -v $(BUILD_DIR)/userland/userland.elf "::userland.elf"
 
 #
 # Bootloader
 #
 bootloader: stage1 stage2
+
+#
+# Userland
+#
+userland: $(BUILD_DIR)/userland/userland.elf
+
+$(BUILD_DIR)/userland/userland.elf:
+	$(MAKE) -C src/userland BUILD_DIR=$(abspath $(BUILD_DIR))
 
 stage1: $(BIN_BUILD_DIR)/stage1.bin
 
@@ -78,6 +87,9 @@ gdbk:
 
 gdb2:
 	gdb -x debugging/stage2
+
+gdbu:
+	gdb -x debugging/userland
 
 build: clean all 
 

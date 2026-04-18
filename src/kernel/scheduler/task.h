@@ -7,6 +7,8 @@
 #include "../mm/vmm/vmm.h"
 #include "../mm/memory.h"
 #include "../mm/pmm/pmm.h"
+#include "../include/string.h"
+#include "../loader/elf.h"
 
 typedef struct Task {
     uint32_t pid;
@@ -29,23 +31,20 @@ typedef enum{
 } TASK_STATE;
 
 #define STACK_SIZE 4096
-extern Task *task ;
+extern Task *task;
 
-/* Virtual addresses for user-space mappings */
-// it is our design
-#define USER_CODE_VIRT   0x00400000   /* one page mapped for user code  */
-#define USER_STACK_VIRT  0x00600000   /* one page mapped for user stack */
+#define USER_CODE_VIRT   0x00400000   /* virtual base for user code  */
+#define USER_STACK_VIRT  0x00600000   /* virtual base for user stack */
+
+extern Task *current_task;
 
 /* handler functions */
 void init_task(void);
 Task* create_task(void (*entry)());
 
-/*
- * Create a ring-3 task.
- *   user_fn  – kernel-side function whose code will be mapped into user space.
- *              Must be self-contained (no kernel function calls from ring 3);
- *              use 'int $0x80' for syscalls.
- */
+
+Task* create_user_task_from_elf(const void *elf_data);
+
 Task* create_user_task(void (*user_fn)());
 
 void schedule();

@@ -8,20 +8,17 @@ static uint16_t next_taskId = 0;
 
 extern void task_entry_trampoline(void);
 
-void idle_task()
+void idle_task(void)
 {
-   
     printf("Task is on IDLE state");
-    for (;;)
-        __asm__("hlt");
+    
+    __asm__("sti\n\thlt");
 }
 
-void task_exit(){
-    printf("exit\n");
+void task_exit(void)
+{
     current_task->state = TASK_COMPLETED;
-    schedule();
-
-    for(;;);
+    for (;;);
 }
 
 
@@ -31,92 +28,78 @@ uint32_t* setup_stack(uint8_t* mem,void (*entry)()){
     *(--stack) = (uint32_t) entry;
     *(--stack) = (uint32_t) task_entry_trampoline;
 
+    /* Must match switch_task's push order: pushfd, push ebp, ebx, esi, edi
+     * Pop order (reverse): pop edi, pop esi, pop ebx, pop ebp, popfd, ret
+     * Stack grows DOWN, so the FIRST pushed (EFLAGS) is at the HIGHEST address: */
+    *(--stack) = 0x200; // EFLAGS: IF=1 (interrupts enabled) — restored by popfd
     *(--stack) = 0; // EBP
     *(--stack) = 0; // EBX
     *(--stack) = 0; // ESI
-    *(--stack) = 0; // EDI
+    *(--stack) = 0; // EDI   ← ESP points here (top of stack)
     return stack;
 }
 
 
-void init_task(void){
-    uint8_t *mem = malloc(sizeof(Task)+STACK_SIZE);
-    //TODO: null check
-    task = (Task*)mem;
-
-    //initial task 
+void init_task(void)
+{
+    uint8_t *mem = malloc(sizeof(Task) + STACK_SIZE);
+    task = (Task *)mem;
     task->pid      = next_taskId++;
     task->state    = TASK_READY;
     task->is_user  = 0;
     task->next     = 0;
     task->user_eip = 0;
     task->user_esp = 0;
-    task->esp      = (uint32_t) setup_stack(mem,idle_task);
-
+    task->esp      = (uint32_t)setup_stack(mem, idle_task);
     current_task = task;
 }
 
-Task* create_task(void (*entry)()){
-    uint8_t *mem = malloc(sizeof(Task)+STACK_SIZE); // used uint_8 for exact byte calculation
-     //TODO: null check
-    Task *t = (Task*)mem;
-    t->esp = (uint32_t) setup_stack(mem,entry);
-    t->state = TASK_READY;
+Task *create_task(void (*entry)(void))
+{
+    uint8_t *mem = malloc(sizeof(Task) + STACK_SIZE);
+    Task *t = (Task *)mem;
+    t->esp     = (uint32_t)setup_stack(mem, entry);
+    t->state   = TASK_READY;
     t->is_user = 0;
-    t->next = 0;
+    t->next    = 0;
     t->user_eip = 0;
     t->user_esp = 0;
+    t->pid     = next_taskId++;
 
-    
-    Task *curr_task = task;
-
-    while(curr_task->next !=0){
-         curr_task = curr_task->next;
-    }
-    t->pid = next_taskId++;
-    curr_task->next = t;
-    
+    Task *curr = task;
+    while (curr->next) curr = curr->next;
+    curr->next = t;
     return t;
 }
 
 static void usermode_trampoline(void)
 {
     enter_usermode(current_task->user_eip, current_task->user_esp);
-    /* never reached */
 }
 
-Task* create_user_task(void (*user_fn)())
+Task *create_user_task_from_elf(const void *elf_data)
 {
-     /* --- map user code page --------------------------------------- */
-   // currently the fn_addr in kernel addr so ring3 user can't have the access so we need to remap this with ring3 attribute
-    uint32_t fn_virt      = (uint32_t)user_fn;
-    // before map we need to get the phys addr of the function , remember our page size is 4kb which is 4096bytes which means 12bits which is 0xFFFF so we can only addr 12 bits of index only
-    uint32_t fn_page_phys = VIRT_TO_PHYS(fn_virt);  /* page-align */
-    fn_page_phys = fn_page_phys & ~0xFFFu;
-    // extract the offset so we can use the offset to get the exact addr
-    uint32_t fn_offset    = fn_virt & 0xFFFu;                  /* byte offset within page */
-
-    // USER_CODE_VIRT = 0x40000 is our own design because every process has own virtual memory so it will not be problem
-    map_page_user((void *)fn_page_phys, (void *)USER_CODE_VIRT);
-    // user_eip now points to user_fn page table
-    uint32_t user_eip = USER_CODE_VIRT + fn_offset;
-
-    /* --- map user stack page --------------------------------------- */
-    uint32_t stack_phys = (uint32_t)allocate_block(1);
+    uint32_t entry = 0;
+    int ret = elf_load(elf_data, &entry);
+    if (ret != ELF_OK) {
+        printf("create_user_task_from_elf: ELF load failed (err=%d)\n", ret);
+        return 0;
+    }
+    uintptr_t stack_phys = allocate_block(1);
     map_page_user((void *)stack_phys, (void *)USER_STACK_VIRT);
-    uint32_t user_esp = USER_STACK_VIRT + PAGE_SIZE; /* stack top (grows down) */
+    uint32_t user_esp = USER_STACK_VIRT + PAGE_SIZE;
 
-    /* --- create kernel task whose entry calls usermode_trampoline - */
     uint8_t *mem = malloc(sizeof(Task) + STACK_SIZE);
-    Task *t      = (Task *)mem;
+    Task    *t   = (Task *)mem;
     t->state     = TASK_READY;
     t->is_user   = 1;
     t->next      = 0;
-    t->user_eip  = user_eip;
+    t->user_eip  = entry;         
     t->user_esp  = user_esp;
     t->esp       = (uint32_t)setup_stack(mem, usermode_trampoline);
     t->pid       = next_taskId++;
 
+    /* Append to task list */
     Task *curr = task;
     while (curr->next) curr = curr->next;
     curr->next = t;
@@ -124,23 +107,17 @@ Task* create_user_task(void (*user_fn)())
     return t;
 }
 
-void schedule(){
+void schedule(void)
+{
     Task *prev = current_task;
-    if(prev->state != TASK_COMPLETED){
+    if (prev->state != TASK_COMPLETED)
         prev->state = TASK_PAUSED;
-    }
     do {
         current_task = current_task->next;
-
-        if(!current_task)
+        if (!current_task)
             current_task = task;
-
-    } while(current_task->state == TASK_COMPLETED);
-
-    
+    } while (current_task->state == TASK_COMPLETED);
     current_task->state = TASK_RUNNIG;
-
-    // Keep TSS.esp0 pointing to the top of the new task's kernel stack.
-    tss_set_kernel_stack((uint32_t)((uint8_t*)current_task + sizeof(Task) + STACK_SIZE));
-    switch_task(prev,current_task);
+    tss_set_kernel_stack((uint32_t)((uint8_t *)current_task + sizeof(Task) + STACK_SIZE));
+    switch_task(prev, current_task);
 }
