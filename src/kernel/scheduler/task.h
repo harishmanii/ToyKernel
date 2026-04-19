@@ -19,6 +19,8 @@ typedef struct Task {
     uint32_t esp;           /* offset 12 – kernel stack ptr (used by switch_task) */
     uint32_t user_eip;      /* offset 16 – ring-3 entry point  (user tasks only) */
     uint32_t user_esp;      /* offset 20 – ring-3 stack top    (user tasks only) */
+    uint8_t priority;
+    uint16_t time_slice;
 } Task;
 
 typedef enum{
@@ -29,6 +31,13 @@ typedef enum{
     TASK_TERMINATED = 5,
     TASK_BLOCKED    = 6
 } TASK_STATE;
+
+typedef enum{
+    LOW_TASK = 5,
+    MEDIUM_TASK = 15,
+    HIGH_TASK = 30,
+    CRITICAL_TASK = 60
+} TASK_PRIORITY;
 
 #define STACK_SIZE 4096
 extern Task *task;

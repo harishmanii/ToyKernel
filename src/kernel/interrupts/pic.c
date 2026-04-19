@@ -108,12 +108,13 @@ void remap_pic(void)
 
 __attribute__((interrupt)) void timer_irq0_handler(int_frame_32_t *frame)
 {
- if (sleep_timer_ticks > 0) {
-        sleep_timer_ticks--;
+    
+ if (current_task->time_slice > 0) {
+        current_task->time_slice--;
     }
 
-    if (sleep_timer_ticks <1) {
-        sleep_timer_ticks = 5; //5 - 5ms , 100 - 1s
+    if (current_task->time_slice == 0) {
+        current_task->time_slice = current_task->priority; //5 - 5ms , 100 - 1s
         send_pic_eoi(0);    // need to acknoweldge the interrupt first otherwise interrupt will not work
         schedule();         // called the schedule to switch the next task
         return;

@@ -51,6 +51,8 @@ void init_task(void)
     task->user_eip = 0;
     task->user_esp = 0;
     task->esp      = (uint32_t)setup_stack(mem, idle_task);
+    task->priority = LOW_TASK;
+    task->time_slice = task->priority;
     current_task = task;
 }
 
@@ -65,6 +67,8 @@ Task *create_task(void (*entry)(void))
     t->user_eip = 0;
     t->user_esp = 0;
     t->pid     = next_taskId++;
+    t->priority     = CRITICAL_TASK;
+    t->time_slice = t->priority;
 
     Task *curr = task;
     while (curr->next) curr = curr->next;
@@ -98,6 +102,8 @@ Task *create_user_task_from_elf(const void *elf_data)
     t->user_esp  = user_esp;
     t->esp       = (uint32_t)setup_stack(mem, usermode_trampoline);
     t->pid       = next_taskId++;
+    t->priority = MEDIUM_TASK;
+    t->time_slice = t->priority;
 
     /* Append to task list */
     Task *curr = task;

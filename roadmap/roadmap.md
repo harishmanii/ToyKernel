@@ -11,7 +11,7 @@
 |---|---|---|
 | Baseline | Core kernel infrastructure | ✅ Complete |
 | Phase 0 | Userland Code Organization | ✅ Complete |
-| Phase 1 | Preemptive Scheduling | 🔴 In Progress |
+| Phase 1 | Preemptive Scheduling | ✅ Complete |
 | Phase 2 | Blocking Scheduler + Sleep | ⏳ Pending |
 | Phase 3 | Per-Process Address Space Isolation | ⏳ Pending |
 | Phase 4 | Page Fault Handler | ⏳ Pending |
@@ -65,16 +65,16 @@
 
 ---
 
-## Phase 1 — Preemptive Scheduling 🔴 In Progress
+## Phase 1 — Preemptive Scheduling ✅ Complete
 
 **Goal:** The kernel forcibly switches tasks on a timer tick. Tasks no longer need to yield voluntarily.
 
 | Task | Status |
 |---|---|
-| Add `time_slice` field to `Task` struct in `task.h`, initialize to N ticks in `create_task()` | ⬜ |
-| In PIT IRQ0 handler: decrement `time_slice`, call `schedule()` when it hits 0, then reset | ⬜ |
-| Verify `switch_task` correctly saves/restores all registers when called from interrupt context | ⬜ |
-| Test: two tasks printing their PID in a tight loop with no `schedule()` calls — both must run | ⬜ |
+| Add `time_slice` field to `Task` struct in `task.h`, initialize to N ticks in `create_task()` | ✅ |
+| In PIT IRQ0 handler: decrement `time_slice`, call `schedule()` when it hits 0, then reset | ✅ |
+| Verify `switch_task` correctly saves/restores all registers when called from interrupt context | ✅ |
+| Test: two tasks printing their PID in a tight loop with no `schedule()` calls — both must run | ✅ |
 
 **Files to touch:** `src/kernel/interrupts/pit.c`, `src/kernel/task/task.h`, `src/kernel/task/task.c`, `src/kernel/task/switch_task.asm`
 
