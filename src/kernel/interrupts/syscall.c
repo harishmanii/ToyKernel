@@ -6,46 +6,41 @@
 #define MAX_SYSCALLS 8
 
 // Test syscall 0
-void syscall_test0(void)
+void syscall_test0(syscall_saved_regs_t *regs)
 {
+    (void)regs;
     printf("SYSCALL testing 0");
 }
 
-void syscall_test1(void)
+void syscall_test1(syscall_saved_regs_t *regs)
 {
+    (void)regs;
     printf("SYSCALL testing 1");
 }
 
-void syscall_print(void){
-    uint32_t val = 0;
-    __asm__ __volatile__ ("mov %%ebx, %0" : "=r"(val) );
-    put_c((char)val);
+// Print a single character passed in EBX.
+void syscall_print(syscall_saved_regs_t *regs)
+{
+    put_c((char)regs->ebx);
 }
 
-// Sleep for a given number of milliseconds
-// INPUTS:
-//  EBX = # of milliseconds
-void syscall_sleep(void)
+// Sleep for a given number of milliseconds.
+// INPUT:  EBX = number of milliseconds
+void syscall_sleep(syscall_saved_regs_t *regs)
 {
-    // //__asm__ __volatile__ ("movl %%ebx, %0" : "=r"(*sleep_timer_ticks) );
-    // __asm__ __volatile__ ("mov %%ebx, %0" : "=r"(*sleep_timer_ticks) );
-
-    // // Wait ("Sleep") until # of ticks is 0
-    // while (*sleep_timer_ticks > 0) __asm__ __volatile__ ("sti;hlt;cli");
+    //sleep_second(regs->ebx);
 }
 
 
 
-//memory
+// Memory
 
-// Allocate uninitialized memory
-// INPUT:
-//   EBX = size in bytes to allocate
-void syscall_malloc(void)
+// Allocate uninitialized memory.
+// INPUT:   EBX = size in bytes to allocate
+// OUTPUT:  EAX = pointer to allocated memory (0 on failure)
+void syscall_malloc(syscall_saved_regs_t *regs)
 {
-    uint32_t bytes = 0;
-
-    __asm__ __volatile__ ("mov %%EBX, %0" : "=b"(bytes) );
+    uint32_t bytes = regs->ebx;
 
     // First malloc() from the calling program?
     if (!malloc_list_head)
@@ -55,27 +50,23 @@ void syscall_malloc(void)
 
     merge_free_blocks();    // Combine consecutive free blocks of memory
 
-    // Return pointer to malloc-ed memory
-    __asm__ __volatile__ ("mov %0, %%EAX" : : "r"(ptr) );
+    // Return pointer to malloc-ed memory via EAX
+    regs->eax = (uint32_t)ptr;
 }
 
-// Free allocated memory at a pointer
-// INPUT:
-//   EBX = pointer to malloc-ed bytes
-void syscall_free(void)
+// Free allocated memory at a pointer.
+// INPUT:  EBX = pointer to malloc-ed bytes
+void syscall_free(syscall_saved_regs_t *regs)
 {
-    void *ptr = 0;
-
-    __asm__ __volatile__ ("mov %%EBX, %0" : "=b"(ptr) );
-
-    malloc_free(ptr);
+    malloc_free((void *)regs->ebx);
 }
 
 
-// Exit the current user task cleanly
+// Exit the current user task cleanly.
 // Marks the task COMPLETED and yields to the scheduler.
-void syscall_exit(void)
+void syscall_exit(syscall_saved_regs_t *regs)
 {
+    (void)regs;
     current_task->state = TASK_COMPLETED;
     schedule();
     /* schedule() never returns here */
@@ -83,11 +74,10 @@ void syscall_exit(void)
 
 // Return the next ASCII keypress to userland (blocking).
 // Delegates to the kernel keyboard driver which waits via HLT.
-// Return value is placed in EAX by the dispatcher.
-void syscall_getkey(void)
+// OUTPUT: EAX = ASCII key code
+void syscall_getkey(syscall_saved_regs_t *regs)
 {
-    uint32_t key = (uint32_t)get_key();   // get_key() blocks on ONE key, not a full line
-    __asm__ __volatile__ ("mov %0, %%eax" : : "r"(key));
+    regs->eax = (uint32_t)get_key();   // get_key() blocks until a key is pressed
 }
 
 void *syscalls[MAX_SYSCALLS] = {
@@ -129,9 +119,9 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
                           "push edx\n"
                           "push ecx\n"
                           "push ebx\n"
-                          "push esp\n"
+                          "push esp\n"         // arg0: pointer to saved regs (syscall_saved_regs_t*)
                           "call [syscalls+eax*4]\n"
-                          "add esp, 4\n"
+                          "add esp, 4\n"       // discard the pushed esp argument
                           "pop ebx\n"
                           "pop ecx\n"
                           "pop edx\n"
@@ -142,8 +132,8 @@ __attribute__ ((naked)) void  syscall_dispatcher(int_frame_32_t *frame)
                           "pop es\n"
                           "pop fs\n"
                           "pop gs\n"
-                          "add esp, 4\n"    // Save eax value in case
-                          "iretd\n"         // Need interrupt return here! iret, NOT ret
+                          "pop eax\n"          // restore EAX (may carry return value written by syscall)
+                          "iretd\n"            // interrupt return, NOT regular ret
 
                           "invalid_syscall:\n"
                           "mov eax, -1\n"   // Error will be -1
