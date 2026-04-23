@@ -10,9 +10,8 @@ extern void task_entry_trampoline(void);
 
 void idle_task(void)
 {
-    printf("Task is on IDLE state");
-    
-    __asm__("sti\n\thlt");
+    for (;;)
+        __asm__ volatile ("sti\n\thlt");  /* sleep until the next interrupt, then loop */
 }
 
 void task_exit(void)
@@ -53,6 +52,7 @@ void init_task(void)
     task->esp      = (uint32_t)setup_stack(mem, idle_task);
     task->priority = LOW_TASK;
     task->time_slice = task->priority;
+    task->wake_tick  = 0;
     current_task = task;
 }
 
@@ -69,6 +69,7 @@ Task *create_task(void (*entry)(void))
     t->pid     = next_taskId++;
     t->priority     = CRITICAL_TASK;
     t->time_slice = t->priority;
+    t->wake_tick  = 0;
 
     Task *curr = task;
     while (curr->next) curr = curr->next;
@@ -104,6 +105,7 @@ Task *create_user_task_from_elf(const void *elf_data)
     t->pid       = next_taskId++;
     t->priority = MEDIUM_TASK;
     t->time_slice = t->priority;
+    t->wake_tick  = 0;
 
     /* Append to task list */
     Task *curr = task;
@@ -116,13 +118,26 @@ Task *create_user_task_from_elf(const void *elf_data)
 void schedule(void)
 {
     Task *prev = current_task;
-    if (prev->state != TASK_COMPLETED)
+    if (prev->state != TASK_COMPLETED && prev->state != TASK_BLOCKED)
         prev->state = TASK_PAUSED;
+    /* Walk the list until we find a runnable task.
+     * If every task is BLOCKED or COMPLETED, halt with interrupts enabled
+     * so the timer ISR can unblock a sleeper and we re-enter schedule(). */
+    Task *start = current_task;
     do {
         current_task = current_task->next;
         if (!current_task)
             current_task = task;
-    } while (current_task->state == TASK_COMPLETED);
+        if (current_task == start) {
+            /* Full loop with no runnable task – spin on HLT until timer unblocks one */
+            __asm__ volatile ("sti");
+            while (current_task->state == TASK_COMPLETED ||
+                   current_task->state == TASK_BLOCKED)
+                __asm__ volatile ("hlt");
+            __asm__ volatile ("cli");
+        }
+    } while (current_task->state == TASK_COMPLETED ||
+             current_task->state == TASK_BLOCKED);
     current_task->state = TASK_RUNNIG;
     tss_set_kernel_stack((uint32_t)((uint8_t *)current_task + sizeof(Task) + STACK_SIZE));
     switch_task(prev, current_task);
