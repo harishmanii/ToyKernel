@@ -12,7 +12,7 @@
 | Baseline | Core kernel infrastructure | ✅ Complete |
 | Phase 0 | Userland Code Organization | ✅ Complete |
 | Phase 1 | Preemptive Scheduling | ✅ Complete |
-| Phase 2 | Blocking Scheduler + Sleep | ⏳ Pending |
+| Phase 2 | Blocking Scheduler + Sleep | ✅ Complete |
 | Phase 3 | Per-Process Address Space Isolation | ⏳ Pending |
 | Phase 4 | Page Fault Handler | ⏳ Pending |
 | Phase 5 | ELF Loader | ⏳ Pending |
@@ -80,18 +80,18 @@
 
 ---
 
-## Phase 2 — Blocking Scheduler + Sleep ⏳ Pending
+## Phase 2 — Blocking Scheduler + Sleep ✅ Complete
 
 **Goal:** Tasks can block and wake up — the foundation for all I/O waiting.
 
 | Task | Status |
 |---|---|
-| Add `wake_tick` field to `Task` struct | ⬜ |
-| Implement `task_sleep(uint32_t ms)` — sets state to `TASK_BLOCKED`, stores `wake_tick` | ⬜ |
-| In PIT handler: walk task list, wake any task where `wake_tick <= kernel_ticks` | ⬜ |
-| Implement `task_block()` / `task_unblock()` as generic primitives | ⬜ |
-| Wire `sys_sleep` syscall (EBX = ms) → `task_sleep()` | ⬜ |
-| Test: sleeping user task interleaves with a running kernel task | ⬜ |
+| Add `wake_tick` field to `Task` struct | ✅ |
+| Implement `task_sleep(uint32_t ms)` — sets state to `TASK_BLOCKED`, stores `wake_tick` | ✅ |
+| In PIT handler: walk task list, wake any task where `wake_tick <= kernel_ticks` | ✅ |
+| Implement `task_block()` / `task_unblock()` as generic primitives | ✅ |
+| Wire `sys_sleep` syscall (EBX = ms) → `task_sleep()` | ✅ |
+| Test: sleeping user task interleaves with a running kernel task | ✅ |
 
 ---
 
