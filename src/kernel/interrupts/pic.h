@@ -11,7 +11,7 @@
 #define IRQ0_SLEEP_TIMER_TICKS_AREA 0x1800
 #define RTC_DATETIME_AREA 0x1610
 
-extern uint32_t sleep_timer_ticks ;
+extern uint32_t kernel_timer_ms ;    /* monotonic millisecond counter */
 
 
 #define PIC_1_CMD  0x20     // input port

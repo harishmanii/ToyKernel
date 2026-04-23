@@ -24,11 +24,16 @@ void syscall_print(syscall_saved_regs_t *regs)
     put_c((char)regs->ebx);
 }
 
-// Sleep for a given number of milliseconds.
-// INPUT:  EBX = number of milliseconds
+// The task is marked TASK_BLOCKED and re-added to the run queue by the
+// timer ISR once kernel_timer_ms >= wake_tick.
 void syscall_sleep(syscall_saved_regs_t *regs)
 {
-    //sleep_second(regs->ebx);
+    uint32_t ms = regs->ebx;
+    if (ms == 0) return;                                    // sleep(0) is a no-op
+
+    current_task->wake_tick = kernel_timer_ms + ms;        // absolute wake time
+    current_task->state     = TASK_BLOCKED;                // mark as sleeping
+    schedule();                                            // yield to next task
 }
 
 

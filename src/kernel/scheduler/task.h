@@ -21,6 +21,7 @@ typedef struct Task {
     uint32_t user_esp;      /* offset 20 – ring-3 stack top    (user tasks only) */
     uint8_t priority;
     uint16_t time_slice;
+    uint32_t wake_tick;     /* ms timestamp at which a TASK_BLOCKED task should wake */
 } Task;
 
 typedef enum{

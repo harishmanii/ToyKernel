@@ -4,8 +4,7 @@
     Refefernces are taken from OSwiki and brokenthorn
 */
 
-
-uint32_t sleep_timer_ticks = 0;
+uint32_t kernel_timer_ms = 0;   /* monotonic ms counter: +10 every IRQ0 (100 Hz PIT) */
 datetime_t *new_datetime = (datetime_t *)RTC_DATETIME_AREA;
 static bool show_datetime = false;
 
@@ -108,6 +107,17 @@ void remap_pic(void)
 
 __attribute__((interrupt)) void timer_irq0_handler(int_frame_32_t *frame)
 {
+    kernel_timer_ms += 10;   /* PIT fires at 100 Hz → 10 ms per tick */
+
+
+
+    /* Unblock any tasks whose sleep has expired */
+    Task *t = task;
+    while (t) {
+        if (t->state == TASK_BLOCKED && kernel_timer_ms >= t->wake_tick)
+            t->state = TASK_READY;
+        t = t->next;
+    }
     
  if (current_task->time_slice > 0) {
         current_task->time_slice--;
