@@ -69,9 +69,5 @@ make clean
 
 ---
 
-If you want, I can also:
-- add a brief Quickstart script that runs prerequisites and `make toolchain && make && make run`.
-- or add a small troubleshooting section for macOS-specific quirks.
-
 Enjoy building and exploring the kernel!
 
